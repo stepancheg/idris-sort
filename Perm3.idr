@@ -1,22 +1,10 @@
-module Main
+module Perm3
+
+import InList
 
 %default total
 
-data InList : Nat -> List Nat -> List Nat -> Type
-    where
-        InListHere : InList x l (x :: l)
-        InListThere : InList x l m -> InList x (a :: l) (a :: m)
-
-inListImpliesNotEmpty : InList x xs xxs -> NonEmpty xxs
-inListImpliesNotEmpty InListHere = IsNonEmpty
-inListImpliesNotEmpty (InListThere _) = IsNonEmpty
-
-inListIncreasesLength : InList x xs xxs -> S (length xs) = length xxs
-inListIncreasesLength InListHere = Refl
-inListIncreasesLength (InListThere i) =
-    rewrite inListIncreasesLength i in
-    Refl
-
+public export
 data Perm : List Nat -> List Nat -> Type
     where
         PermRefl : Perm l l
@@ -95,6 +83,7 @@ extrPerm {l = S Z} {ok} {xxs = a :: x1 :: xs} (InListThere p1 {m = x1 :: xs}) _ 
         SSIsNotSZ Refl impossible
 
 
+export
 permTrans : Perm xs ys -> Perm ys zs -> Perm xs zs
 permTrans PermRefl p = p
 permTrans p PermRefl = p
