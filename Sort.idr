@@ -29,34 +29,6 @@ sortedToAlt {l = (a :: b :: rem)} s @ (RecSorted a b rem lteAB sortedBRem) =
 sortedAlt1 : (a : Nat) -> SortedAlt [a]
 sortedAlt1 a = RecSortedAlt a [] (LTEAllEmpty a) EmptySortedAlt
 
--- Proof that list is not sorted if first element is greater than second
-notSortedE1E2 : Not (LTE a b) -> Sorted (a :: b :: rem) -> Void
-notSortedE1E2 _ EmptySorted impossible
-notSortedE1E2 _ (OneSorted _) impossible
-notSortedE1E2 {a} {b} {rem} notLTE (RecSorted a b rem lte _) = notLTE lte
-
--- Proof that list is not sorted if tail is not sorted
-notSortedBRem : Not (Sorted (b :: rem)) -> Sorted (a :: b :: rem) -> Void
-notSortedBRem _ EmptySorted impossible
-notSortedBRem _ (OneSorted _) impossible
-notSortedBRem notSorted (RecSorted _ _ _ _ sorted) = notSorted sorted
-
-isSorted : (v : List Nat) -> Dec (Sorted v)
-isSorted [] = Yes EmptySorted
-isSorted [a] = Yes $ OneSorted a
-isSorted (a :: b :: rem) with (isLTE a b, isSorted (b :: rem))
-    -- if first is less or equal then second and tail is sorted, then it is sorted
-    isSorted (a :: b :: rem) | (Yes prfLTE, Yes prfSortedBRem) = Yes $ RecSorted a b rem prfLTE prfSortedBRem
-    -- otherwise it is not sorted
-    isSorted (a :: b :: rem) | (_, No contra) = No $ notSortedBRem contra
-    isSorted (a :: b :: rem) | (No contra, _) = No $ notSortedE1E2 contra
-
--- Non-dependent-types shortcut
-isSortedBool : (v : List Nat) -> Bool
-isSortedBool v = case isSorted v of
-    Yes _ => True
-    No _ => False
-
 notLTEImpliesRevLTE : Not (LTE a b) -> LTE b a
 notLTEImpliesRevLTE {a = Z} notLTE = absurd (notLTE LTEZero)
 notLTEImpliesRevLTE {a = S k} {b = Z} notLTE = LTEZero
@@ -78,18 +50,22 @@ removeMinElement (a :: b :: rem) =
             lteAllConcat (lteAll1 (notLTEImpliesRevLTE contra)) lteAllBbRrem
         )))
 
-partial -- TODO
-sort1 : (i : List Nat) -> (o : List Nat ** (Sorted o, PermSimple i o))
-sort1 [] = ([] ** (EmptySorted, PermSimpleEmpty))
-sort1 (a :: as) =
+sort1 : (i : List Nat) -> (l : Nat) -> {auto i_length_eq_l : (length i = l)} ->
+    (o ** (Sorted o, PermSimple i o))
+sort1 [] _ = ([] ** (EmptySorted, PermSimpleEmpty))
+sort1 (a :: as) (S k) {i_length_eq_l} =
     let (v ** vs ** (perm_a_as_v_vs, v_lte_vs)) = removeMinElement (a :: as) in
-    let (ws ** (ws_sorted, perm_vs_ws)) = sort1 vs in
+    let length_v_vs_eq_l : (length (v :: vs) = S k) =
+        trans (permSimpleLengthRefl $ permSimpleSym $ perm_a_as_v_vs) i_length_eq_l in
+    let length_vs_eq_k : (length vs = k) = cong length_v_vs_eq_l {f = Nat.pred} in
+    let (ws ** (ws_sorted, perm_vs_ws)) = sort1 vs k in
     let v_lte_ws = lteAllTrans v_lte_vs perm_vs_ws in
     let v_ws = v :: ws in
     let perm_v_vs_v_ws = permSimplePrepend {a = v} perm_vs_ws in
     let perm_a_as_v_ws = permSimpleTrans perm_a_as_v_vs perm_v_vs_v_ws in
-    let v_ws_sorted = ?a in
+    let v_ws_sorted = sortedPrepend v_lte_ws ws_sorted in
     (v_ws ** (v_ws_sorted, perm_a_as_v_ws))
+sort1 (a :: as) Z {i_length_eq_l} = absurd i_length_eq_l
 
-main : IO ()
-main = putStrLn $ show $ isSortedBool [2, 3, 5]
+sort : (i : List Nat) -> (o : List Nat ** (Sorted o, PermSimple i o))
+sort i = sort1 i _

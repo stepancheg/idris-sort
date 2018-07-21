@@ -57,6 +57,10 @@ permSimpleTrans p1 p2 =
     let ph = permTrans p1h p2h in
     permHardToSimple ph
 
+export
 permSimpleSym : PermSimple xs ys -> PermSimple ys xs
 permSimpleSym PermSimpleEmpty = PermSimpleEmpty
 permSimpleSym (PermSimpleInsert p) = PermSimpleInsert (permSimpleSym p)
+
+export
+permSimpleLengthRefl : PermSimple xs ys -> length xs = length ys
