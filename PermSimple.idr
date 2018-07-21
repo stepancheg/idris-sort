@@ -18,12 +18,14 @@ permWithEqToHard : PermWithEq xs ys -> Perm xs ys
 permWithEqToHard (PermWithEqRefl prf) = rewrite prf in PermRefl
 permWithEqToHard (PermWithEqIns p ixs iys) = PermIns (permWithEqToHard p) ixs iys
 
+public export
 data PermSimple : List Nat -> List Nat -> Type
     where
         PermSimpleEmpty : PermSimple [] []
         PermSimpleInsert : (p : PermSimple (xs ++ ys) (zs ++ ws)) ->
             PermSimple (xs ++ [v] ++ ys) (zs ++ [v] ++ ws)
 
+export
 permSimpleFromRefl : (xs : _) -> PermSimple xs xs
 permSimpleFromRefl [] = PermSimpleEmpty
 permSimpleFromRefl (v :: xs) =
