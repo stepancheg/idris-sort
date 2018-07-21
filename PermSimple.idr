@@ -49,6 +49,7 @@ permHardToSimple {as} {bs} (PermIns {l} {m} p ias ibs {x = v}) =
     let pp : PermSimple (xs ++ ys) (zs ++ ws) = replace2 (sym f3) (sym f4) (permHardToSimple p) in
     replace2 f1 f2 (PermSimpleInsert pp {xs} {ys} {zs} {ws} {v})
 
+export
 permSimpleTrans : PermSimple xs ys -> PermSimple ys zs -> PermSimple xs zs
 permSimpleTrans p1 p2 =
     let p1h = permSimpleToHard p1 in
