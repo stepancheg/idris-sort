@@ -5,19 +5,6 @@ import InList
 
 %default total
 
-data PermWithEq : List Nat -> List Nat -> Type
-    where
-        PermWithEqRefl : xs = ys -> PermWithEq xs ys
-        PermWithEqIns : PermWithEq l m -> InList x l l1 -> InList x m m1 -> PermWithEq l1 m1
-
-permHardToWithEq : Perm xs ys -> PermWithEq xs ys
-permHardToWithEq PermRefl = PermWithEqRefl Refl
-permHardToWithEq (PermIns p ixs iys) = PermWithEqIns (permHardToWithEq p) ixs iys
-
-permWithEqToHard : PermWithEq xs ys -> Perm xs ys
-permWithEqToHard (PermWithEqRefl prf) = rewrite prf in PermRefl
-permWithEqToHard (PermWithEqIns p ixs iys) = PermIns (permWithEqToHard p) ixs iys
-
 public export
 data PermSimple : List Nat -> List Nat -> Type
     where
@@ -31,6 +18,10 @@ permSimpleFromRefl [] = PermSimpleEmpty
 permSimpleFromRefl (v :: xs) =
     let pp = permSimpleFromRefl xs in
     PermSimpleInsert pp {xs = []} {ys = xs} {zs = []} {ws = xs}
+
+export
+permSimplePrepend : PermSimple xs ys -> PermSimple (a :: xs) (a :: ys)
+permSimplePrepend = PermSimpleInsert {xs = []} {zs = []}
 
 permSimpleToHard : PermSimple as bs -> Perm as bs
 permSimpleToHard PermSimpleEmpty = PermRefl
@@ -64,3 +55,7 @@ permSimpleTrans p1 p2 =
     let p2h = permSimpleToHard p2 in
     let ph = permTrans p1h p2h in
     permHardToSimple ph
+
+permSimpleSym : PermSimple xs ys -> PermSimple ys xs
+permSimpleSym PermSimpleEmpty = PermSimpleEmpty
+permSimpleSym (PermSimpleInsert p) = PermSimpleInsert (permSimpleSym p)

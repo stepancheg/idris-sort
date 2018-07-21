@@ -116,8 +116,8 @@ notLTEImpliesRevLTE {a = S k} {b = Z} notLTE = LTEZero
 notLTEImpliesRevLTE {a = S k} {b = S j} notLTE = LTESucc (notLTEImpliesRevLTE (notLTE . LTESucc))
 
 total
-removeMinElement : (l : List Nat) -> {auto ok : NonEmpty l} ->
-    (v ** r ** (PermSimple l (v :: r), LTEAll v r))
+removeMinElement : (xxs : List Nat) -> {auto ok : NonEmpty xxs} ->
+    (x ** xs ** (PermSimple xxs (x :: xs), LTEAll x xs))
 removeMinElement [a] = (a ** ([] ** (permSimpleFromRefl [a], LTEAllEmpty a)))
 removeMinElement (a :: b :: rem) =
     let (bb ** (rrem ** (bbRremPerm, lteAllBbRrem))) = removeMinElement (b :: rem)
@@ -135,12 +135,13 @@ removeMinElement (a :: b :: rem) =
 -- total -- TODO
 sort1 : (i : List Nat) -> (o : List Nat ** (Sorted o, PermSimple i o))
 sort1 [] = ([] ** (EmptySorted, PermSimpleEmpty))
-sort1 (a :: rem) =
-    let (v ** (vrem ** (permARemVrem, _))) = removeMinElement (a :: rem) in
-    let (wrem ** (_, permVremWrem)) = sort1 vrem in
-    let r = v :: wrem in
-    let permARemVWrem = ?x in
-    (r ** (?a, permARemVWrem))
+sort1 (a :: as) =
+    let (v ** vs ** (perm_a_as_v_vs, _)) = removeMinElement (a :: as) in
+    let (ws ** (ws_sorted, perm_vs_ws)) = sort1 vs in
+    let v_ws = v :: ws in
+    let perm_a_as_v_ws = ?x in
+    let v_ws_sorted = ?a in
+    (v_ws ** (v_ws_sorted, perm_a_as_v_ws))
 
 main : IO ()
 main = putStrLn $ show $ isSortedBool [2, 3, 5]
