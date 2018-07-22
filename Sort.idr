@@ -22,11 +22,11 @@ removeMinElement (a :: b :: rem) =
     in
     case isLTE a bb of
         Yes lteABb => (a ** ((bb :: rrem) ** (
-            PermSimpleIns {v = a} {xs = []} {ys = b :: rem} {zs = []} {ws = bb :: rrem} bbRremPerm,
+            PermSimpleIns {xs = []} {ys = b :: rem} {zs = []} {ws = bb :: rrem} bbRremPerm a,
             lteAllPrepend lteABb lteAllBbRrem
         )))
         No contra => (bb ** ((a :: rrem) ** (
-            PermSimpleIns {v = a} {xs = []} {ys = b :: rem} {zs = [bb]} {ws = rrem} bbRremPerm,
+            PermSimpleIns {xs = []} {ys = b :: rem} {zs = [bb]} {ws = rrem} bbRremPerm a,
             lteAllConcat (lteAll1 (notLTEImpliesRevLTE contra)) lteAllBbRrem
         )))
 
