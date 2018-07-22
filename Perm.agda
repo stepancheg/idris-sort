@@ -1,3 +1,6 @@
+-- This file is a copy-paste of
+-- https://gist.github.com/AndrasKovacs/0d7bcc3aba513c29ef73/
+-- with minor changes for better compatibility with Idris.
 
 open import Data.List
 open import Data.Nat
