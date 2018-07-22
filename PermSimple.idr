@@ -62,5 +62,49 @@ permSimpleSym : PermSimple xs ys -> PermSimple ys xs
 permSimpleSym PermSimpleEmpty = PermSimpleEmpty
 permSimpleSym (PermSimpleInsert p) = PermSimpleInsert (permSimpleSym p)
 
+-- TODO: inline
+substl : a = b -> a = c -> c = b
+substl a_b a_c = trans (sym a_c) a_b
+
+substr : a = b -> b = c -> a = c
+substr a_b b_c = trans a_b b_c
+
+substlr : a = b -> a = c -> b = d -> c = d
+substlr a_b a_c b_d = substr (substl a_b a_c) b_d
+
+lengthAppend3 : (xs, ys, zs : List Nat) -> length (xs ++ ys ++ zs) = length xs + length ys + length zs
+lengthAppend3 xs ys zs =
+    let t2 : (length (ys ++ zs) = length ys + length zs) = lengthAppend ys zs in
+    let t5 : (length xs + length (ys ++ zs) = length xs + (length ys + length zs)) =
+        plusConstantLeft _ _ _ t2 in
+
+    let sl : (length xs + length (ys ++ zs) = length (xs ++ ys ++ zs)) = sym $ lengthAppend _ _ in
+    let sr : (length xs + (length ys + length zs) = length xs + length ys + length zs) = plusAssociative _ _ _ in
+
+    substlr t5 sl sr
+
 export
 permSimpleLengthRefl : PermSimple xs ys -> length xs = length ys
+permSimpleLengthRefl PermSimpleEmpty = Refl
+permSimpleLengthRefl (PermSimpleInsert p {v} {xs} {ys} {zs} {ws}) =
+    let prev : (length (xs ++ ys) = length (zs ++ ws)) = permSimpleLengthRefl p in
+    let s_prev : (S (length (xs ++ ys)) = S (length (zs ++ ws))) = cong prev in
+    let ins_l : (S (length (xs ++ ys)) = length (xs ++ [v] ++ ys)) = listInsertLength _ _ _ in
+    let ins_r : (S (length (zs ++ ws)) = length (zs ++ [v] ++ ws)) = listInsertLength _ _ _ in
+    substlr s_prev ins_l ins_r
+    where
+        flipPlus : (x, y, z : Nat) -> x + y + z = y + x + z
+        flipPlus x y z = cong (plusCommutative x y) {f = \v => v + z}
+
+        flipListLength : (xs, ys, zs : List Nat) -> length (xs ++ ys ++ zs) = length (ys ++ xs ++ zs)
+        flipListLength xs ys zs =
+            let a1 : (length (xs ++ ys ++ zs) = length xs + length ys + length zs) = lengthAppend3 _ _ _ in
+            let a2 : (length (ys ++ xs ++ zs) = length ys + length xs + length zs) = lengthAppend3 _ _ _ in
+            substlr (flipPlus (length xs) (length ys) (length zs)) (sym a1) (sym a2)
+
+        listInsertLength : (xs : List Nat) -> (v : Nat) -> (ys : List Nat) ->
+            S (length (xs ++ ys)) = length (xs ++ [v] ++ ys)
+        listInsertLength xs v ys =
+            let e1 : (S (length (xs ++ ys)) = length ([v] ++ xs ++ ys)) = Refl in
+            substr e1 (flipListLength [v] xs ys)
+
