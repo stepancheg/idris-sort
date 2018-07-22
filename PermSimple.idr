@@ -15,6 +15,8 @@ data PermSimple : List a -> List a -> Type
     where
         -- Empty list is a permutation to itself
         PermSimpleEmpty : PermSimple [] []
+        -- If two lists are permutations, then inserting the same element
+        -- into middle of them results in permutation of new lists.
         PermSimpleInsert : (p : PermSimple (xs ++ ys) (zs ++ ws)) ->
             PermSimple (xs ++ [v] ++ ys) (zs ++ [v] ++ ws)
 

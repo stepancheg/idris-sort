@@ -13,6 +13,7 @@ notLTEImpliesRevLTE {a = Z} notLTE = absurd (notLTE LTEZero)
 notLTEImpliesRevLTE {a = S k} {b = Z} notLTE = LTEZero
 notLTEImpliesRevLTE {a = S k} {b = S j} notLTE = LTESucc (notLTEImpliesRevLTE (notLTE . LTESucc))
 
+-- Remove min element from a list
 removeMinElement : (xxs : List Nat) -> {auto ok : NonEmpty xxs} ->
     (x ** xs ** (PermSimple xxs (x :: xs), LTEAll x xs))
 removeMinElement [a] = (a ** ([] ** (permSimpleFromRefl [a], LTEAllEmpty)))
@@ -29,6 +30,8 @@ removeMinElement (a :: b :: rem) =
             lteAllConcat (lteAll1 (notLTEImpliesRevLTE contra)) lteAllBbRrem
         )))
 
+-- Helper function for sort implementation
+-- `l` parameter exists only to prove totality
 sort1 : (i : List Nat) -> (l : Nat) -> {auto i_length_eq_l : (length i = l)} ->
     (o ** (Sorted o, PermSimple i o))
 sort1 [] _ = ([] ** (SortedEmpty, PermSimpleEmpty))

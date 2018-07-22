@@ -9,11 +9,11 @@ import SortedAlt
 public export
 data Sorted : List Nat -> Type
     where
-        -- empty list is always sorted
+        -- Empty list is always sorted
         SortedEmpty : Sorted []
-        -- list of one element is always sorted
+        -- List of one element is always sorted
         SortedOne : (a : Nat) -> Sorted [a]
-        -- list of two or more element is sorted iff both are true
+        -- List of two or more element is sorted iff both are true
         -- * first is less or equal than second
         -- * tail is sorted
         SortedRec : (a : Nat) -> (b : Nat) -> (rem : List Nat)
@@ -23,7 +23,7 @@ data Sorted : List Nat -> Type
 notSortedE1E2 : Not (LTE a b) -> Sorted (a :: b :: rem) -> Void
 notSortedE1E2 _ SortedEmpty impossible
 notSortedE1E2 _ (SortedOne _) impossible
-notSortedE1E2 {a} {b} {rem} notLTE (SortedRec a b rem lte _) = notLTE lte
+notSortedE1E2 notLTE (SortedRec _ _ _ lte _) = notLTE lte
 
 -- Proof that list is not sorted if tail is not sorted
 notSortedBRem : Not (Sorted (b :: rem)) -> Sorted (a :: b :: rem) -> Void
@@ -31,6 +31,7 @@ notSortedBRem _ SortedEmpty impossible
 notSortedBRem _ (SortedOne _) impossible
 notSortedBRem notSorted (SortedRec _ _ _ _ sorted) = notSorted sorted
 
+-- Check if list is already sorted
 export
 isSorted : (v : List Nat) -> Dec (Sorted v)
 isSorted [] = Yes SortedEmpty
@@ -43,12 +44,14 @@ isSorted (a :: b :: rem) with (isLTE a b, isSorted (b :: rem))
     isSorted (a :: b :: rem) | (No contra, _) = No $ notSortedE1E2 contra
 
 -- Non-dependent-types shortcut
+-- Just for illustration purposes
 export
 isSortedBool : (v : List Nat) -> Bool
 isSortedBool v = case isSorted v of
     Yes _ => True
     No _ => False
 
+-- Replacing list head with smaller value results in sorted list
 export
 sortedReplaceFirstSmaller : LTE a b -> Sorted (b :: rem) -> Sorted (a :: rem)
 sortedReplaceFirstSmaller _ SortedEmpty impossible
@@ -77,6 +80,7 @@ sortedFromAlt (SortedAltRec a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
         LTEAllRec _ _ lte_a_b _ =>
             SortedRec a b rem lte_a_b (sortedFromAlt sorted_alt_b_rem)
 
+-- Prepend an element to a sorted list
 export
 sortedPrepend : LTEAll a xs -> Sorted xs -> Sorted (a :: xs)
 sortedPrepend lteAll_a_xs = (sortedFromAlt . (sortedAltPrepend lteAll_a_xs) . sortedToAlt)
