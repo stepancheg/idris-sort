@@ -2,32 +2,11 @@ module Sort
 
 import PermSimple
 import Sorted
+import SortedAlt
 import LTEAll
 
 %default total
 
-
-sortedToLTEAll : Sorted (a :: rem) -> LTEAll a rem
-sortedToLTEAll EmptySorted impossible
-sortedToLTEAll {a} {rem = []} (OneSorted a) = LTEAllEmpty a
-sortedToLTEAll {a} {rem = b :: brem} (RecSorted a b brem lteAB sortedBRem) =
-    LTEAllRec a b lteAB (sortedToLTEAll (sortedReplaceFirstSmaller lteAB sortedBRem))
-
-data SortedAlt : List Nat -> Type
-    where
-        EmptySortedAlt : SortedAlt []
-        -- TODO: rem sorted
-        RecSortedAlt : (a : Nat) -> (rem : List Nat) ->
-            LTEAll a rem -> SortedAlt rem -> SortedAlt (a :: rem)
-
-sortedToAlt : Sorted l -> SortedAlt l
-sortedToAlt {l = []} EmptySorted = EmptySortedAlt
-sortedToAlt {l = [a]} (OneSorted a) = RecSortedAlt a [] (LTEAllEmpty a) EmptySortedAlt
-sortedToAlt {l = (a :: b :: rem)} s @ (RecSorted a b rem lteAB sortedBRem) =
-    RecSortedAlt a (b :: rem) (sortedToLTEAll s) (sortedToAlt sortedBRem)
-
-sortedAlt1 : (a : Nat) -> SortedAlt [a]
-sortedAlt1 a = RecSortedAlt a [] (LTEAllEmpty a) EmptySortedAlt
 
 notLTEImpliesRevLTE : Not (LTE a b) -> LTE b a
 notLTEImpliesRevLTE {a = Z} notLTE = absurd (notLTE LTEZero)
@@ -52,7 +31,7 @@ removeMinElement (a :: b :: rem) =
 
 sort1 : (i : List Nat) -> (l : Nat) -> {auto i_length_eq_l : (length i = l)} ->
     (o ** (Sorted o, PermSimple i o))
-sort1 [] _ = ([] ** (EmptySorted, PermSimpleEmpty))
+sort1 [] _ = ([] ** (SortedEmpty, PermSimpleEmpty))
 sort1 (a :: as) (S k) {i_length_eq_l} =
     let (v ** vs ** (perm_a_as_v_vs, v_lte_vs)) = removeMinElement (a :: as) in
     let length_v_vs_eq_l : (length (v :: vs) = S k) =

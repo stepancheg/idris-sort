@@ -1,6 +1,7 @@
 module Sorted
 
 import LTEAll
+import SortedAlt
 
 %default total
 
@@ -9,34 +10,34 @@ public export
 data Sorted : List Nat -> Type
     where
         -- empty list is always sorted
-        EmptySorted : Sorted []
+        SortedEmpty : Sorted []
         -- list of one element is always sorted
-        OneSorted : (a : Nat) -> Sorted [a]
+        SortedOne : (a : Nat) -> Sorted [a]
         -- list of two or more element is sorted iff both are true
         -- * first is less or equal than second
         -- * tail is sorted
-        RecSorted : (a : Nat) -> (b : Nat) -> (rem : List Nat)
+        SortedRec : (a : Nat) -> (b : Nat) -> (rem : List Nat)
             -> LTE a b -> Sorted (b :: rem) -> Sorted (a :: b :: rem)
 
 -- Proof that list is not sorted if first element is greater than second
 notSortedE1E2 : Not (LTE a b) -> Sorted (a :: b :: rem) -> Void
-notSortedE1E2 _ EmptySorted impossible
-notSortedE1E2 _ (OneSorted _) impossible
-notSortedE1E2 {a} {b} {rem} notLTE (RecSorted a b rem lte _) = notLTE lte
+notSortedE1E2 _ SortedEmpty impossible
+notSortedE1E2 _ (SortedOne _) impossible
+notSortedE1E2 {a} {b} {rem} notLTE (SortedRec a b rem lte _) = notLTE lte
 
 -- Proof that list is not sorted if tail is not sorted
 notSortedBRem : Not (Sorted (b :: rem)) -> Sorted (a :: b :: rem) -> Void
-notSortedBRem _ EmptySorted impossible
-notSortedBRem _ (OneSorted _) impossible
-notSortedBRem notSorted (RecSorted _ _ _ _ sorted) = notSorted sorted
+notSortedBRem _ SortedEmpty impossible
+notSortedBRem _ (SortedOne _) impossible
+notSortedBRem notSorted (SortedRec _ _ _ _ sorted) = notSorted sorted
 
 export
 isSorted : (v : List Nat) -> Dec (Sorted v)
-isSorted [] = Yes EmptySorted
-isSorted [a] = Yes $ OneSorted a
+isSorted [] = Yes SortedEmpty
+isSorted [a] = Yes $ SortedOne a
 isSorted (a :: b :: rem) with (isLTE a b, isSorted (b :: rem))
     -- if first is less or equal then second and tail is sorted, then it is sorted
-    isSorted (a :: b :: rem) | (Yes prfLTE, Yes prfSortedBRem) = Yes $ RecSorted a b rem prfLTE prfSortedBRem
+    isSorted (a :: b :: rem) | (Yes prfLTE, Yes prfSortedBRem) = Yes $ SortedRec a b rem prfLTE prfSortedBRem
     -- otherwise it is not sorted
     isSorted (a :: b :: rem) | (_, No contra) = No $ notSortedBRem contra
     isSorted (a :: b :: rem) | (No contra, _) = No $ notSortedE1E2 contra
@@ -50,12 +51,32 @@ isSortedBool v = case isSorted v of
 
 export
 sortedReplaceFirstSmaller : LTE a b -> Sorted (b :: rem) -> Sorted (a :: rem)
-sortedReplaceFirstSmaller _ EmptySorted impossible
-sortedReplaceFirstSmaller {a} {b} _ (OneSorted b) = OneSorted a
-sortedReplaceFirstSmaller {a} {b} lteAB (RecSorted b c rem lteBC sortedCRem) =
-    RecSorted a c rem (lteTransitive lteAB lteBC) sortedCRem
+sortedReplaceFirstSmaller _ SortedEmpty impossible
+sortedReplaceFirstSmaller {a} {b} _ (SortedOne b) = SortedOne a
+sortedReplaceFirstSmaller {a} {b} lteAB (SortedRec b c rem lteBC sortedCRem) =
+    SortedRec a c rem (lteTransitive lteAB lteBC) sortedCRem
+
+sortedToLTEAll : Sorted (a :: rem) -> LTEAll a rem
+sortedToLTEAll SortedEmpty impossible
+sortedToLTEAll {a} {rem = []} (SortedOne a) = LTEAllEmpty a
+sortedToLTEAll {a} {rem = b :: brem} (SortedRec a b brem lteAB sortedBRem) =
+    LTEAllRec a b lteAB (sortedToLTEAll (sortedReplaceFirstSmaller lteAB sortedBRem))
+
+sortedToAlt : Sorted l -> SortedAlt l
+sortedToAlt {l = []} SortedEmpty = SortedAltEmpty
+sortedToAlt {l = [a]} (SortedOne a) = SortedAltRec a [] (LTEAllEmpty a) SortedAltEmpty
+sortedToAlt {l = (a :: b :: rem)} s @ (SortedRec a b rem lteAB sortedBRem) =
+    SortedAltRec a (b :: rem) (sortedToLTEAll s) (sortedToAlt sortedBRem)
+
+sortedFromAlt : SortedAlt l -> Sorted l
+sortedFromAlt SortedAltEmpty = SortedEmpty
+sortedFromAlt (SortedAltRec a [] _ _) = SortedOne a
+sortedFromAlt (SortedAltRec a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
+    case lteAll_a_b_rem of
+        LTEAllEmpty _ impossible
+        LTEAllRec _ _ lte_a_b _ =>
+            SortedRec a b rem lte_a_b (sortedFromAlt sorted_alt_b_rem)
 
 export
 sortedPrepend : LTEAll a xs -> Sorted xs -> Sorted (a :: xs)
-
-
+sortedPrepend lteAll_a_xs = (sortedFromAlt . (sortedAltPrepend lteAll_a_xs) . sortedToAlt)
