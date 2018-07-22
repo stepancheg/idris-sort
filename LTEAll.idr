@@ -8,16 +8,16 @@ import PermSimple
 public export
 data LTEAll : Nat -> List Nat -> Type
     where
-        LTEAllEmpty : (v : Nat) -> LTEAll v []
+        LTEAllEmpty : LTEAll v []
         LTEAllRec : (v : Nat) -> (a : Nat) -> LTE v a -> LTEAll v rem -> LTEAll v (a :: rem)
 
 export
 lteAll1 : LTE v x -> LTEAll v [x]
-lteAll1 {v} {x} lteVX = LTEAllRec v x lteVX (LTEAllEmpty v)
+lteAll1 {v} {x} lteVX = LTEAllRec v x lteVX LTEAllEmpty
 
 export
 lteAllConcat : LTEAll v xs -> LTEAll v ys -> LTEAll v (xs ++ ys)
-lteAllConcat {v} {xs = []}      {ys = []} (LTEAllEmpty v) (LTEAllEmpty v) = LTEAllEmpty v
+lteAllConcat {v} {xs = []}      {ys = []} LTEAllEmpty LTEAllEmpty = LTEAllEmpty
 lteAllConcat {v} {xs = []}                _ lteAllYs = lteAllYs
 lteAllConcat {v} {xs = x :: xs} {ys = []} lteAllXs _ = rewrite appendNilRightNeutral xs in lteAllXs
 lteAllConcat {v} {xs = x :: xs} {ys}      (LTEAllRec v  x lteVX lteAllVXs) lteAllVYs =
@@ -27,17 +27,17 @@ lteAllSplit : LTEAll v (xs ++ ys) -> (LTEAll v xs, LTEAll v ys)
 lteAllSplit {xs = []} {ys = []} LTEAllEmpty = (LTEAllEmpty, LTEAllEmpty)
 lteAllSplit {xs = xxs} {ys} r @ LTEAllRec =
     case xxs of
-        [] => (LTEAllEmpty _, r)
+        [] => (LTEAllEmpty, r)
         x :: xs =>
             case r of
-                LTEAllEmpty _ impossible
+                LTEAllEmpty impossible
                 LTEAllRec v x lte_v_x lteAll_xs_ys =>
                     let (lteAll_xs, lteAll_ys) = lteAllSplit lteAll_xs_ys in
                     let lteAll_x_xs = lteAllConcat (lteAll1 lte_v_x) lteAll_xs in
                     (lteAll_x_xs, lteAll_ys)
 
 lteAllSmaller : LTE a b -> LTEAll b l -> LTEAll a l
-lteAllSmaller {a} {b} {l = []} lteAB (LTEAllEmpty b) = LTEAllEmpty a
+lteAllSmaller {a} {b} {l = []} lteAB LTEAllEmpty = LTEAllEmpty
 lteAllSmaller {a} {b} {l = c :: rem} lteAB (LTEAllRec b c lteBC lteAllBRem) =
     LTEAllRec a c (lteTransitive lteAB lteBC) (lteAllSmaller lteAB lteAllBRem)
 

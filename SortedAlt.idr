@@ -12,7 +12,7 @@ data SortedAlt : List Nat -> Type
             LTEAll a rem -> SortedAlt rem -> SortedAlt (a :: rem)
 
 sortedAlt1 : (a : Nat) -> SortedAlt [a]
-sortedAlt1 a = SortedAltRec a [] (LTEAllEmpty a) SortedAltEmpty
+sortedAlt1 a = SortedAltRec a [] LTEAllEmpty SortedAltEmpty
 
 export
 sortedAltPrepend : LTEAll a xs -> SortedAlt xs -> SortedAlt (a :: xs)

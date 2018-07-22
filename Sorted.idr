@@ -58,13 +58,13 @@ sortedReplaceFirstSmaller {a} {b} lteAB (SortedRec b c rem lteBC sortedCRem) =
 
 sortedToLTEAll : Sorted (a :: rem) -> LTEAll a rem
 sortedToLTEAll SortedEmpty impossible
-sortedToLTEAll {a} {rem = []} (SortedOne a) = LTEAllEmpty a
+sortedToLTEAll {a} {rem = []} (SortedOne a) = LTEAllEmpty
 sortedToLTEAll {a} {rem = b :: brem} (SortedRec a b brem lteAB sortedBRem) =
     LTEAllRec a b lteAB (sortedToLTEAll (sortedReplaceFirstSmaller lteAB sortedBRem))
 
 sortedToAlt : Sorted l -> SortedAlt l
 sortedToAlt {l = []} SortedEmpty = SortedAltEmpty
-sortedToAlt {l = [a]} (SortedOne a) = SortedAltRec a [] (LTEAllEmpty a) SortedAltEmpty
+sortedToAlt {l = [a]} (SortedOne a) = SortedAltRec a [] LTEAllEmpty SortedAltEmpty
 sortedToAlt {l = (a :: b :: rem)} s @ (SortedRec a b rem lteAB sortedBRem) =
     SortedAltRec a (b :: rem) (sortedToLTEAll s) (sortedToAlt sortedBRem)
 
@@ -73,7 +73,7 @@ sortedFromAlt SortedAltEmpty = SortedEmpty
 sortedFromAlt (SortedAltRec a [] _ _) = SortedOne a
 sortedFromAlt (SortedAltRec a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
     case lteAll_a_b_rem of
-        LTEAllEmpty _ impossible
+        LTEAllEmpty impossible
         LTEAllRec _ _ lte_a_b _ =>
             SortedRec a b rem lte_a_b (sortedFromAlt sorted_alt_b_rem)
 

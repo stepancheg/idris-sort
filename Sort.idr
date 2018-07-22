@@ -15,7 +15,7 @@ notLTEImpliesRevLTE {a = S k} {b = S j} notLTE = LTESucc (notLTEImpliesRevLTE (n
 
 removeMinElement : (xxs : List Nat) -> {auto ok : NonEmpty xxs} ->
     (x ** xs ** (PermSimple xxs (x :: xs), LTEAll x xs))
-removeMinElement [a] = (a ** ([] ** (permSimpleFromRefl [a], LTEAllEmpty a)))
+removeMinElement [a] = (a ** ([] ** (permSimpleFromRefl [a], LTEAllEmpty)))
 removeMinElement (a :: b :: rem) =
     let (bb ** (rrem ** (bbRremPerm, lteAllBbRrem))) = removeMinElement (b :: rem)
     in
