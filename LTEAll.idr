@@ -24,6 +24,17 @@ lteAllConcat {v} {xs = x :: xs} {ys}      (LTEAllRec v  x lteVX lteAllVXs) lteAl
     LTEAllRec v x lteVX (lteAllConcat lteAllVXs lteAllVYs)
 
 lteAllSplit : LTEAll v (xs ++ ys) -> (LTEAll v xs, LTEAll v ys)
+lteAllSplit {xs = []} {ys = []} LTEAllEmpty = (LTEAllEmpty, LTEAllEmpty)
+lteAllSplit {xs = xxs} {ys} r @ LTEAllRec =
+    case xxs of
+        [] => (LTEAllEmpty _, r)
+        x :: xs =>
+            case r of
+                LTEAllEmpty _ impossible
+                LTEAllRec v x lte_v_x lteAll_xs_ys =>
+                    let (lteAll_xs, lteAll_ys) = lteAllSplit lteAll_xs_ys in
+                    let lteAll_x_xs = lteAllConcat (lteAll1 lte_v_x) lteAll_xs in
+                    (lteAll_x_xs, lteAll_ys)
 
 lteAllSmaller : LTE a b -> LTEAll b l -> LTEAll a l
 lteAllSmaller {a} {b} {l = []} lteAB (LTEAllEmpty b) = LTEAllEmpty a
