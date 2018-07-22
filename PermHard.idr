@@ -5,7 +5,7 @@ import InList
 %default total
 
 public export
-data PermHard : List Nat -> List Nat -> Type
+data PermHard : List a -> List a -> Type
     where
         PermHardRefl : PermHard l l
         PermHardIns : PermHard l m -> InList x l l1 -> InList x m m1 -> PermHard l1 m1
