@@ -1,5 +1,13 @@
 module PermHard
 
+-- Implementation of list permutation property in Idris.
+-- This algorithm is a translation of this code in Agda I've found
+-- https://gist.github.com/AndrasKovacs/0d7bcc3aba513c29ef73/
+-- This definition is not very human friendly, but it's suitable
+-- for proving transitivity.
+-- Simpler definitions of permutation is in the file `PermSimple.idr`
+-- which also contains a proof that both definitions are equivalent.
+
 import InList
 
 %default total
