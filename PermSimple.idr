@@ -11,7 +11,7 @@ import InList
 -- Functions `permSimpleToHard` and `permHardToSimple` prove
 -- that both definitions are equivalent.
 public export
-data PermSimple : List Nat -> List Nat -> Type
+data PermSimple : List a -> List a -> Type
     where
         -- Empty list is a permutation to itself
         PermSimpleEmpty : PermSimple [] []
@@ -92,7 +92,7 @@ permSimpleLengthRefl (PermSimpleInsert p {v} {xs} {ys} {zs} {ws}) =
         substlr a_b a_c b_d = trans (trans (sym a_c) a_b) b_d
 
         -- three-argument version of `lengthAppend`
-        lengthAppend3 : (xs, ys, zs : List Nat) ->
+        lengthAppend3 : (xs, ys, zs : List t) ->
             length (xs ++ ys ++ zs) = length xs + length ys + length zs
         lengthAppend3 xs ys zs =
             let t2 : (length (ys ++ zs) = length ys + length zs) = lengthAppend ys zs in
@@ -108,13 +108,13 @@ permSimpleLengthRefl (PermSimpleInsert p {v} {xs} {ys} {zs} {ws}) =
         flipPlus : (x, y, z : Nat) -> x + y + z = y + x + z
         flipPlus x y z = cong (plusCommutative x y) {f = \v => v + z}
 
-        flipListLength : (xs, ys, zs : List Nat) -> length (xs ++ ys ++ zs) = length (ys ++ xs ++ zs)
+        flipListLength : (xs, ys, zs : List t) -> length (xs ++ ys ++ zs) = length (ys ++ xs ++ zs)
         flipListLength xs ys zs =
             let a1 : (length (xs ++ ys ++ zs) = length xs + length ys + length zs) = lengthAppend3 _ _ _ in
             let a2 : (length (ys ++ xs ++ zs) = length ys + length xs + length zs) = lengthAppend3 _ _ _ in
             substlr (flipPlus (length xs) (length ys) (length zs)) (sym a1) (sym a2)
 
-        listInsertLength : (xs : List Nat) -> (v : Nat) -> (ys : List Nat) ->
+        listInsertLength : (xs : List t) -> (v : t) -> (ys : List t) ->
             S (length (xs ++ ys)) = length (xs ++ [v] ++ ys)
         listInsertLength xs v ys =
             let e1 : (S (length (xs ++ ys)) = length ([v] ++ xs ++ ys)) = Refl in

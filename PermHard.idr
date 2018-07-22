@@ -35,7 +35,7 @@ l1 (PermHardIns p (InListThere ixs) iys) with (l1 p)
             (proj1 ** (proj3, PermHardIns perm ixs proj2))
 
 
-nonEmptyListLengthNeverZero : (xxs : List Nat) -> {auto nonEmpty : NonEmpty xxs} -> Not (length xxs = Z)
+nonEmptyListLengthNeverZero : (xxs : List t) -> {auto nonEmpty : NonEmpty xxs} -> Not (length xxs = Z)
 nonEmptyListLengthNeverZero [] {nonEmpty} = absurd nonEmpty
 nonEmptyListLengthNeverZero (x :: xs) = absurd
 

@@ -3,17 +3,17 @@ module InList
 %default total
 
 public export
-data InList : Nat -> List Nat -> List Nat -> Type
+data InList : {t : Type} -> t -> List t -> List t -> Type
     where
         InListHere : InList x l (x :: l)
         InListThere : InList x l m -> InList x (a :: l) (a :: m)
 
-inListPrepend : (zs : List Nat) -> InList x xs xxs -> InList x (zs ++ xs) (zs ++ xxs)
+inListPrepend : (zs : List t) -> InList x xs xxs -> InList x (zs ++ xs) (zs ++ xxs)
 inListPrepend [] il = il
 inListPrepend (z :: zs) il = InListThere (inListPrepend zs il)
 
 export
-inListFromPlus : (xs : List Nat) -> (v : Nat) -> (ys : List Nat) -> InList v (xs ++ ys) (xs ++ [v] ++ ys)
+inListFromPlus : (xs : List t) -> (v : t) -> (ys : List t) -> InList v (xs ++ ys) (xs ++ [v] ++ ys)
 inListFromPlus xs v ys = inListPrepend xs InListHere
 
 export
