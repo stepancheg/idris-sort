@@ -17,7 +17,7 @@ data PermSimple : List a -> List a -> Type
         PermSimpleEmpty : PermSimple [] []
         -- If two lists are permutations, then inserting the same element
         -- into middle of them results in permutation of new lists.
-        PermSimpleInsert : (p : PermSimple (xs ++ ys) (zs ++ ws)) ->
+        PermSimpleIns : (p : PermSimple (xs ++ ys) (zs ++ ws)) ->
             PermSimple (xs ++ [v] ++ ys) (zs ++ [v] ++ ws)
 
 -- List is always a permutation to itself.
@@ -26,17 +26,17 @@ permSimpleFromRefl : (xs : _) -> PermSimple xs xs
 permSimpleFromRefl [] = PermSimpleEmpty
 permSimpleFromRefl (v :: xs) =
     let pp = permSimpleFromRefl xs in
-    PermSimpleInsert pp {xs = []} {ys = xs} {zs = []} {ws = xs}
+    PermSimpleIns pp {xs = []} {ys = xs} {zs = []} {ws = xs}
 
 -- Prepending an element to two lists results in permutation
 export
 permSimplePrepend : (a : _) -> PermSimple xs ys -> PermSimple (a :: xs) (a :: ys)
-permSimplePrepend a = PermSimpleInsert {xs = []} {zs = []}
+permSimplePrepend a = PermSimpleIns {xs = []} {zs = []}
 
 -- Convert this definition to "hard" definition
 permSimpleToHard : PermSimple as bs -> PermHard as bs
 permSimpleToHard PermSimpleEmpty = PermHardRefl
-permSimpleToHard {as = xs ++ [v] ++ ys} {bs = zs ++ [v] ++ ws} (PermSimpleInsert p) =
+permSimpleToHard {as = xs ++ [v] ++ ys} {bs = zs ++ [v] ++ ws} (PermSimpleIns p) =
     let xys = xs ++ ys in
     let zws = zs ++ ws in
     let xvys = xs ++ [v] ++ ys in
@@ -59,7 +59,7 @@ permHardToSimple {as} {bs} (PermHardIns {l} {m} p ias ibs {x = v}) =
     let f3 : (xs ++ ys = l) = xs_ys in
     let f4 : (zs ++ ws = m) = zs_ws in
     let pp : PermSimple (xs ++ ys) (zs ++ ws) = replace2 (sym f3) (sym f4) (permHardToSimple p) in
-    replace2 f1 f2 (PermSimpleInsert pp {xs} {ys} {zs} {ws} {v})
+    replace2 f1 f2 (PermSimpleIns pp {xs} {ys} {zs} {ws} {v})
 
 -- Permutations are transitive.
 -- However, regular human cannot prove it with this file definitios of permutation
@@ -76,13 +76,13 @@ permSimpleTrans p1 p2 =
 export
 permSimpleSym : PermSimple xs ys -> PermSimple ys xs
 permSimpleSym PermSimpleEmpty = PermSimpleEmpty
-permSimpleSym (PermSimpleInsert p) = PermSimpleInsert (permSimpleSym p)
+permSimpleSym (PermSimpleIns p) = PermSimpleIns (permSimpleSym p)
 
 -- Permutated lists have the same length
 export
 permSimpleLengthRefl : PermSimple xs ys -> length xs = length ys
 permSimpleLengthRefl PermSimpleEmpty = Refl
-permSimpleLengthRefl (PermSimpleInsert p {v} {xs} {ys} {zs} {ws}) =
+permSimpleLengthRefl (PermSimpleIns p {v} {xs} {ys} {zs} {ws}) =
     let prev : (length (xs ++ ys) = length (zs ++ ws)) = permSimpleLengthRefl p in
     let s_prev : (S (length (xs ++ ys)) = S (length (zs ++ ws))) = cong prev in
     let ins_l : (S (length (xs ++ ys)) = length (xs ++ [v] ++ ys)) = listInsertLength _ _ _ in

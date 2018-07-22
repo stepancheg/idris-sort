@@ -49,7 +49,7 @@ lteAllPrepend {a} {b} {l} lteAB lteAllBL =
 export
 lteAllTrans : LTEAll m as -> PermSimple as bs -> LTEAll m bs
 lteAllTrans LTEAllEmpty PermSimpleEmpty = LTEAllEmpty
-lteAllTrans {m} lteAll_as (PermSimpleInsert p {v} {xs} {ys} {zs} {ws}) =
+lteAllTrans {m} lteAll_as (PermSimpleIns p {v} {xs} {ys} {zs} {ws}) =
     let (lteAll_xs, lteAll_v_ys) = lteAllSplit lteAll_as {xs = xs} {ys = v :: ys} in
     let (lteAll_v, lteAll_ys) = lteAllSplit lteAll_v_ys {xs = [v]} {ys = ys} in
     let lteAll_xs_ys = lteAllConcat lteAll_xs lteAll_ys in
