@@ -30,8 +30,8 @@ permSimpleFromRefl (v :: xs) =
 
 -- Prepending an element to two lists results in permutation
 export
-permSimplePrepend : PermSimple xs ys -> PermSimple (a :: xs) (a :: ys)
-permSimplePrepend = PermSimpleInsert {xs = []} {zs = []}
+permSimplePrepend : (a : _) -> PermSimple xs ys -> PermSimple (a :: xs) (a :: ys)
+permSimplePrepend a = PermSimpleInsert {xs = []} {zs = []}
 
 -- Convert this definition to "hard" definition
 permSimpleToHard : PermSimple as bs -> PermHard as bs

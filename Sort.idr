@@ -43,7 +43,7 @@ sort1 (a :: as) (S k) {i_length_eq_l} =
     let (ws ** (ws_sorted, perm_vs_ws)) = sort1 vs k in
     let v_lte_ws = lteAllTrans v_lte_vs perm_vs_ws in
     let v_ws = v :: ws in
-    let perm_v_vs_v_ws = permSimplePrepend {a = v} perm_vs_ws in
+    let perm_v_vs_v_ws = permSimplePrepend v perm_vs_ws in
     let perm_a_as_v_ws = permSimpleTrans perm_a_as_v_vs perm_v_vs_v_ws in
     let v_ws_sorted = sortedPrepend v_lte_ws ws_sorted in
     (v_ws ** (v_ws_sorted, perm_a_as_v_ws))
