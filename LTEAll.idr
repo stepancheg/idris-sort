@@ -23,6 +23,8 @@ lteAllConcat {v} {xs = x :: xs} {ys = []} lteAllXs _ = rewrite appendNilRightNeu
 lteAllConcat {v} {xs = x :: xs} {ys}      (LTEAllRec v  x lteVX lteAllVXs) lteAllVYs =
     LTEAllRec v x lteVX (lteAllConcat lteAllVXs lteAllVYs)
 
+lteAllSplit : LTEAll v (xs ++ ys) -> (LTEAll v xs, LTEAll v ys)
+
 lteAllSmaller : LTE a b -> LTEAll b l -> LTEAll a l
 lteAllSmaller {a} {b} {l = []} lteAB (LTEAllEmpty b) = LTEAllEmpty a
 lteAllSmaller {a} {b} {l = c :: rem} lteAB (LTEAllRec b c lteBC lteAllBRem) =
@@ -34,4 +36,15 @@ lteAllPrepend {a} {b} {l} lteAB lteAllBL =
     lteAllConcat (lteAll1 lteAB) (lteAllSmaller lteAB lteAllBL)
 
 export
-lteAllTrans : LTEAll a xs -> PermSimple xs ys -> LTEAll a ys
+lteAllTrans : LTEAll m as -> PermSimple as bs -> LTEAll m bs
+lteAllTrans LTEAllEmpty PermSimpleEmpty = LTEAllEmpty
+lteAllTrans {m} lteAll_as (PermSimpleInsert p {v} {xs} {ys} {zs} {ws}) =
+    let (lteAll_xs, lteAll_v_ys) = lteAllSplit lteAll_as {xs = xs} {ys = v :: ys} in
+    let (lteAll_v, lteAll_ys) = lteAllSplit lteAll_v_ys {xs = [v]} {ys = ys} in
+    let lteAll_xs_ys = lteAllConcat lteAll_xs lteAll_ys in
+    let lteAll_zs_ws = lteAllTrans lteAll_xs_ys p in
+    let (lteAll_zs, lteAll_ws) = lteAllSplit lteAll_zs_ws {xs = zs} {ys = ws} in
+    let lteAll_v_ws = lteAllConcat lteAll_v lteAll_ws in
+    let lteAll_zs_v_ws = lteAllConcat lteAll_zs lteAll_v_ws in
+    lteAll_zs_v_ws
+
