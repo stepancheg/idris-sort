@@ -3,7 +3,8 @@ module Sort
 import PermSimple
 import Sorted
 import SortedAlt
-import LTEAll
+import Forall
+import PermSimpleForall
 
 %default total
 
@@ -13,10 +14,19 @@ notLTEImpliesRevLTE {a = Z} notLTE = absurd (notLTE LTEZero)
 notLTEImpliesRevLTE {a = S k} {b = Z} notLTE = LTEZero
 notLTEImpliesRevLTE {a = S k} {b = S j} notLTE = LTESucc (notLTEImpliesRevLTE (notLTE . LTESucc))
 
+
+lteAllSmaller : LTE a b -> Forall (LTE b) xs -> Forall (LTE a) xs
+lteAllSmaller lte_a_b = forallMap (\x, lte_b_x => lteTransitive lte_a_b lte_b_x)
+
+lteAllPrepend : LTE a b -> Forall (LTE b) xs -> Forall (LTE a) (b :: xs)
+lteAllPrepend lte_a_b fa_lte_b_xs =
+    forallConcat (forall1 lte_a_b) (lteAllSmaller lte_a_b fa_lte_b_xs)
+
+
 -- Remove min element from a list
 removeMinElement : (xxs : List Nat) -> {auto ok : NonEmpty xxs} ->
-    (x ** xs ** (PermSimple xxs (x :: xs), LTEAll x xs))
-removeMinElement [a] = (a ** ([] ** (permSimpleFromRefl [a], LTEAllEmpty)))
+    (x ** xs ** (PermSimple xxs (x :: xs), Forall (LTE x) xs))
+removeMinElement [a] = (a ** ([] ** (permSimpleFromRefl [a], ForallEmpty)))
 removeMinElement (a :: b :: rem) =
     let (bb ** (rrem ** (bbRremPerm, lteAllBbRrem))) = removeMinElement (b :: rem)
     in
@@ -27,7 +37,7 @@ removeMinElement (a :: b :: rem) =
         )))
         No contra => (bb ** ((a :: rrem) ** (
             PermSimpleIns {xs = []} {ys = b :: rem} {zs = [bb]} {ws = rrem} bbRremPerm a,
-            lteAllConcat (lteAll1 (notLTEImpliesRevLTE contra)) lteAllBbRrem
+            forallConcat (forall1 (notLTEImpliesRevLTE contra)) lteAllBbRrem
         )))
 
 -- Helper function for sort implementation
@@ -41,7 +51,7 @@ sort1 (a :: as) (S k) {i_length_eq_l} =
         trans (permSimpleLengthRefl $ permSimpleSym $ perm_a_as_v_vs) i_length_eq_l in
     let length_vs_eq_k : (length vs = k) = cong length_v_vs_eq_l {f = Nat.pred} in
     let (ws ** (ws_sorted, perm_vs_ws)) = sort1 vs k in
-    let v_lte_ws = lteAllTrans v_lte_vs perm_vs_ws in
+    let v_lte_ws = forallPermSimple v_lte_vs perm_vs_ws in
     let v_ws = v :: ws in
     let perm_v_vs_v_ws = permSimplePrepend v perm_vs_ws in
     let perm_a_as_v_ws = permSimpleTrans perm_a_as_v_vs perm_v_vs_v_ws in
