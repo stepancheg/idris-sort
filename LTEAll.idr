@@ -43,10 +43,18 @@ lteAllSmaller {a} {b} {l = []} lteAB LTEAllEmpty = LTEAllEmpty
 lteAllSmaller {a} {b} {l = c :: rem} lteAB (LTEAllRec b c lteBC lteAllBRem) =
     LTEAllRec a c (lteTransitive lteAB lteBC) (lteAllSmaller lteAB lteAllBRem)
 
+lteAllSmaller_f : LTE a b -> Forall (LTE b) xs -> Forall (LTE a) xs
+lteAllSmaller_f lte_a_b = forallMap (\x, lte_b_x => lteTransitive lte_a_b lte_b_x)
+
 export
 lteAllPrepend : LTE a b -> LTEAll b l -> LTEAll a (b :: l)
 lteAllPrepend {a} {b} {l} lteAB lteAllBL =
     lteAllConcat (lteAll1 lteAB) (lteAllSmaller lteAB lteAllBL)
+
+export
+lteAllPrepend_f : LTE a b -> Forall (LTE b) xs -> Forall (LTE a) (b :: xs)
+lteAllPrepend_f lte_a_b fa_lte_b_xs =
+    forallConcat (forall1 lte_a_b) (lteAllSmaller_f lte_a_b fa_lte_b_xs)
 
 export
 lteAllTrans : LTEAll m as -> PermSimple as bs -> LTEAll m bs
