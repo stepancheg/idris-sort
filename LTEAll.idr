@@ -1,6 +1,8 @@
 module LTEAll
 
 import PermSimple
+-- Probably should be implemented with `Forall`
+import Forall
 
 %default total
 
