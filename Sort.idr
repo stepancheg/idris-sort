@@ -59,5 +59,6 @@ sort1 (a :: as) (S k) {i_length_eq_l} =
     (v_ws ** (v_ws_sorted, perm_a_as_v_ws))
 sort1 (a :: as) Z {i_length_eq_l} = absurd i_length_eq_l
 
+export
 sort : (i : List Nat) -> (o : List Nat ** (Sorted o, PermSimple i o))
 sort i = sort1 i _

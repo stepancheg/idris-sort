@@ -98,6 +98,3 @@ permHardTrans p PermHardRefl = p
 permHardTrans (PermHardIns xy ix iy) p2 =
     let (proj1 ** (proj2, proj3)) = extrPerm iy p2 in
     PermHardIns (permHardTrans xy proj3) ix proj2
-
-main : IO ()
-main = putStrLn $ show $ "aa"
