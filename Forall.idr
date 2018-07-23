@@ -6,11 +6,13 @@ module Forall
 public export
 data Forall : (a -> Type) -> List a -> Type
     where
-        ForallEmpty : Forall a []
+        ForallEmpty : Forall p []
         ForallRec : p x -> Forall p xs -> Forall p (x :: xs)
 
 export
-forallFromList : (p : a -> Type) -> (xs : List a) -> Forall p xs
+forallFromList : ((x : a) -> p x) -> (xs : List a) -> Forall p xs
+forallFromList _ [] = ForallEmpty
+forallFromList f (x :: xs) = ForallRec (f x) (forallFromList f xs)
 
 export
 forall0 : Forall p []
