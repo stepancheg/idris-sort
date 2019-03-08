@@ -65,16 +65,16 @@ sortedToLTEAll {a} {rem = []} (SortedOne a) = ForallEmpty
 sortedToLTEAll {a} {rem = b :: brem} (SortedRec a b brem lteAB sortedBRem) =
     ForallRec lteAB (sortedToLTEAll (sortedReplaceFirstSmaller lteAB sortedBRem))
 
-sortedToAlt : Sorted l -> SortedAlt l
-sortedToAlt {l = []} SortedEmpty = SortedAltEmpty
-sortedToAlt {l = [a]} (SortedOne a) = SortedAltRec a [] ForallEmpty SortedAltEmpty
+sortedToAlt : Sorted l -> SortedAlt LTE l
+sortedToAlt {l = []} SortedEmpty = SortedAltEmpty LTE
+sortedToAlt {l = [a]} (SortedOne a) = SortedAltRec LTE a [] ForallEmpty (SortedAltEmpty LTE)
 sortedToAlt {l = (a :: b :: rem)} s @ (SortedRec a b rem lteAB sortedBRem) =
-    SortedAltRec a (b :: rem) (sortedToLTEAll s) (sortedToAlt sortedBRem)
+    SortedAltRec LTE a (b :: rem) (sortedToLTEAll s) (sortedToAlt sortedBRem)
 
-sortedFromAlt : SortedAlt l -> Sorted l
-sortedFromAlt SortedAltEmpty = SortedEmpty
-sortedFromAlt (SortedAltRec a [] _ _) = SortedOne a
-sortedFromAlt (SortedAltRec a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
+sortedFromAlt : SortedAlt LTE l -> Sorted l
+sortedFromAlt (SortedAltEmpty _) = SortedEmpty
+sortedFromAlt (SortedAltRec _ a [] _ _) = SortedOne a
+sortedFromAlt (SortedAltRec _ a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
     case lteAll_a_b_rem of
         ForallEmpty impossible
         ForallRec lte_a_b _ =>
@@ -83,4 +83,4 @@ sortedFromAlt (SortedAltRec a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
 -- Prepend an element to a sorted list
 export
 sortedPrepend : Forall (LTE a) xs -> Sorted xs -> Sorted (a :: xs)
-sortedPrepend lteAll_a_xs = (sortedFromAlt . (sortedAltPrepend lteAll_a_xs) . sortedToAlt)
+sortedPrepend lteAll_a_xs = (sortedFromAlt . (sortedAltPrepend LTE lteAll_a_xs) . sortedToAlt)
