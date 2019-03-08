@@ -5,39 +5,43 @@ import Sorted
 import SortedAlt
 import Forall
 import PermSimpleForall
+import Natx
 
 %default total
 
 
-notLTEImpliesRevLTE : Not (LTE a b) -> LTE b a
-notLTEImpliesRevLTE {a = Z} notLTE = absurd (notLTE LTEZero)
-notLTEImpliesRevLTE {a = S k} {b = Z} notLTE = LTEZero
-notLTEImpliesRevLTE {a = S k} {b = S j} notLTE = LTESucc (notLTEImpliesRevLTE (notLTE . LTESucc))
+lteAllSmaller : {lte : Nat -> Nat -> Type} -> ({x, y, z : Nat} -> lte x y -> lte y z -> lte x z) -> lte a b -> Forall (lte b) xs -> Forall (lte a) xs
+lteAllSmaller lteTransitive lte_a_b = forallMap (\x, lte_b_x => lteTransitive lte_a_b lte_b_x)
 
-
-lteAllSmaller : LTE a b -> Forall (LTE b) xs -> Forall (LTE a) xs
-lteAllSmaller lte_a_b = forallMap (\x, lte_b_x => lteTransitive lte_a_b lte_b_x)
-
-lteAllPrepend : LTE a b -> Forall (LTE b) xs -> Forall (LTE a) (b :: xs)
-lteAllPrepend lte_a_b fa_lte_b_xs =
-    forallConcat (forall1 lte_a_b) (lteAllSmaller lte_a_b fa_lte_b_xs)
+lteAllPrepend : {lte : Nat -> Nat -> Type}
+    -> ({x, y, z : Nat} -> lte x y -> lte y z -> lte x z)
+    -> lte a b
+    -> Forall (lte b) xs
+    -> Forall (lte a) (b :: xs)
+lteAllPrepend lteTransitive lte_a_b fa_lte_b_xs =
+    forallConcat (forall1 lte_a_b) (lteAllSmaller lteTransitive lte_a_b fa_lte_b_xs)
 
 
 -- Remove min element from a list
-removeMinElement : (xxs : List Nat) -> {auto ok : NonEmpty xxs} ->
-    (x ** xs ** (PermSimple xxs (x :: xs), Forall (LTE x) xs))
-removeMinElement [a] = (a ** ([] ** (permSimpleFromRefl [a], ForallEmpty)))
-removeMinElement (a :: b :: rem) =
-    let (bb ** (rrem ** (bbRremPerm, lteAllBbRrem))) = removeMinElement (b :: rem)
+removeMinElement : {lte : Nat -> Nat -> Type}
+    -> (isLTE : (m, n : Nat) -> Dec (lte m n))
+    -> (lteAntisymmetric : {x, y : Nat} -> Not (lte x y) -> lte y x)
+    -> ({x, y, z : Nat} -> lte x y -> lte y z -> lte x z)
+    -> (xxs : List Nat)
+    -> {auto ok : NonEmpty xxs}
+    -> (x ** xs ** (PermSimple xxs (x :: xs), Forall (lte x) xs))
+removeMinElement _ _ _ [a] = (a ** ([] ** (permSimpleFromRefl [a], ForallEmpty)))
+removeMinElement isLTE lteAntisymmetric lteTransitive (a :: b :: rem) =
+    let (bb ** (rrem ** (bbRremPerm, lteAllBbRrem))) = removeMinElement isLTE lteAntisymmetric lteTransitive (b :: rem)
     in
     case isLTE a bb of
         Yes lteABb => (a ** ((bb :: rrem) ** (
             PermSimpleIns {xs = []} {ys = b :: rem} {zs = []} {ws = bb :: rrem} bbRremPerm a,
-            lteAllPrepend lteABb lteAllBbRrem
+            lteAllPrepend lteTransitive lteABb lteAllBbRrem
         )))
         No contra => (bb ** ((a :: rrem) ** (
             PermSimpleIns {xs = []} {ys = b :: rem} {zs = [bb]} {ws = rrem} bbRremPerm a,
-            forallConcat (forall1 (notLTEImpliesRevLTE contra)) lteAllBbRrem
+            forallConcat (forall1 (lteAntisymmetric contra)) lteAllBbRrem
         )))
 
 -- Helper function for sort implementation
@@ -46,7 +50,7 @@ sort1 : (i : List Nat) -> (l : Nat) -> {auto i_length_eq_l : (length i = l)} ->
     (o ** (Sorted LTE o, PermSimple i o))
 sort1 [] _ = ([] ** (SortedEmpty, PermSimpleEmpty))
 sort1 (a :: as) (S k) {i_length_eq_l} =
-    let (v ** vs ** (perm_a_as_v_vs, v_lte_vs)) = removeMinElement (a :: as) in
+    let (v ** vs ** (perm_a_as_v_vs, v_lte_vs)) = removeMinElement isLTE lteAntisymmetric lteTransitive (a :: as) in
     let length_v_vs_eq_l : (length (v :: vs) = S k) =
         trans (permSimpleLengthRefl $ permSimpleSym $ perm_a_as_v_vs) i_length_eq_l in
     let length_vs_eq_k : (length vs = k) = cong length_v_vs_eq_l {f = Nat.pred} in
