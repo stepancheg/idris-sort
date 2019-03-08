@@ -43,7 +43,7 @@ removeMinElement (a :: b :: rem) =
 -- Helper function for sort implementation
 -- `l` parameter exists only to prove totality
 sort1 : (i : List Nat) -> (l : Nat) -> {auto i_length_eq_l : (length i = l)} ->
-    (o ** (Sorted o, PermSimple i o))
+    (o ** (Sorted LTE o, PermSimple i o))
 sort1 [] _ = ([] ** (SortedEmpty, PermSimpleEmpty))
 sort1 (a :: as) (S k) {i_length_eq_l} =
     let (v ** vs ** (perm_a_as_v_vs, v_lte_vs)) = removeMinElement (a :: as) in
@@ -55,10 +55,10 @@ sort1 (a :: as) (S k) {i_length_eq_l} =
     let v_ws = v :: ws in
     let perm_v_vs_v_ws = permSimplePrepend v perm_vs_ws in
     let perm_a_as_v_ws = permSimpleTrans perm_a_as_v_vs perm_v_vs_v_ws in
-    let v_ws_sorted = sortedPrepend v_lte_ws ws_sorted in
+    let v_ws_sorted = sortedPrepend lteTransitive v_lte_ws ws_sorted in
     (v_ws ** (v_ws_sorted, perm_a_as_v_ws))
 sort1 (a :: as) Z {i_length_eq_l} = absurd i_length_eq_l
 
 export
-sort : (i : List Nat) -> (o : List Nat ** (Sorted o, PermSimple i o))
+sort : (i : List Nat) -> (o : List Nat ** (Sorted LTE o, PermSimple i o))
 sort i = sort1 i _

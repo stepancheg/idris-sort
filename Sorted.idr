@@ -7,74 +7,76 @@ import SortedAlt
 
 -- Definition of what it means for List to be sorted
 public export
-data Sorted : List Nat -> Type
+data Sorted : (Nat -> Nat -> Type) -> List Nat -> Type
     where
         -- Empty list is always sorted
-        SortedEmpty : Sorted []
+        SortedEmpty : {lte : Nat -> Nat -> Type} -> Sorted lte []
         -- List of one element is always sorted
-        SortedOne : (a : Nat) -> Sorted [a]
+        SortedOne : {lte : Nat -> Nat -> Type} -> (a : Nat) -> Sorted lte [a]
         -- List of two or more element is sorted iff both are true
         -- * first is less or equal than second
         -- * tail is sorted
-        SortedRec : (a : Nat) -> (b : Nat) -> (rem : List Nat)
-            -> LTE a b -> Sorted (b :: rem) -> Sorted (a :: b :: rem)
+        SortedRec : {lte : Nat -> Nat -> Type}
+            -> (a : Nat) -> (b : Nat) -> (rem : List Nat)
+            -> lte a b -> Sorted lte (b :: rem)
+            -> Sorted lte (a :: b :: rem)
 
 -- Proof that list is not sorted if first element is greater than second
-notSortedE1E2 : Not (LTE a b) -> Sorted (a :: b :: rem) -> Void
-notSortedE1E2 _ SortedEmpty impossible
-notSortedE1E2 _ (SortedOne _) impossible
-notSortedE1E2 notLTE (SortedRec _ _ _ lte _) = notLTE lte
+notSortedE1E2 : (lte : Nat -> Nat -> Type) -> Not (lte a b) -> Sorted lte (a :: b :: rem) -> Void
+notSortedE1E2 _ _ SortedEmpty impossible
+notSortedE1E2 _ _ (SortedOne _) impossible
+notSortedE1E2 _ notLTE (SortedRec _ _ _ lte _) = notLTE lte
 
 -- Proof that list is not sorted if tail is not sorted
-notSortedBRem : Not (Sorted (b :: rem)) -> Sorted (a :: b :: rem) -> Void
-notSortedBRem _ SortedEmpty impossible
-notSortedBRem _ (SortedOne _) impossible
-notSortedBRem notSorted (SortedRec _ _ _ _ sorted) = notSorted sorted
+notSortedBRem : (lte : Nat -> Nat -> Type) -> Not (Sorted lte (b :: rem)) -> Sorted lte (a :: b :: rem) -> Void
+notSortedBRem _ _ SortedEmpty impossible
+notSortedBRem _ _ (SortedOne _) impossible
+notSortedBRem _ notSorted (SortedRec _ _ _ _ sorted) = notSorted sorted
 
 -- Check if list is already sorted
 export
-isSorted : (v : List Nat) -> Dec (Sorted v)
-isSorted [] = Yes SortedEmpty
-isSorted [a] = Yes $ SortedOne a
-isSorted (a :: b :: rem) with (isLTE a b, isSorted (b :: rem))
+isSorted : {lte : Nat -> Nat -> Type} -> (isLTE : (x, y : Nat) -> Dec (lte x y)) -> (v : List Nat) -> Dec (Sorted lte v)
+isSorted _ [] = Yes $ SortedEmpty
+isSorted _ [a] = Yes $ SortedOne a
+isSorted isLTE (a :: b :: rem) with (isLTE a b, isSorted isLTE (b :: rem))
     -- if first is less or equal then second and tail is sorted, then it is sorted
-    isSorted (a :: b :: rem) | (Yes prfLTE, Yes prfSortedBRem) = Yes $ SortedRec a b rem prfLTE prfSortedBRem
+    isSorted _ (a :: b :: rem) | (Yes prfLTE, Yes prfSortedBRem) = Yes $ SortedRec a b rem prfLTE prfSortedBRem
     -- otherwise it is not sorted
-    isSorted (a :: b :: rem) | (_, No contra) = No $ notSortedBRem contra
-    isSorted (a :: b :: rem) | (No contra, _) = No $ notSortedE1E2 contra
+    isSorted _ (a :: b :: rem) | (_, No contra) = No $ notSortedBRem _ contra
+    isSorted _ (a :: b :: rem) | (No contra, _) = No $ notSortedE1E2 _ contra
 
 -- Non-dependent-types shortcut
 -- Just for illustration purposes
 export
-isSortedBool : (v : List Nat) -> Bool
-isSortedBool v = case isSorted v of
+isSortedBool : {lte : Nat -> Nat -> Type} -> (isLTE : (x, y : Nat) -> Dec (lte x y)) -> (v : List Nat) -> Bool
+isSortedBool isLTE v = case isSorted isLTE v of
     Yes _ => True
     No _ => False
 
 -- Replacing list head with smaller value results in sorted list
 export
-sortedReplaceFirstSmaller : LTE a b -> Sorted (b :: rem) -> Sorted (a :: rem)
-sortedReplaceFirstSmaller _ SortedEmpty impossible
-sortedReplaceFirstSmaller {a} {b} _ (SortedOne b) = SortedOne a
-sortedReplaceFirstSmaller {a} {b} lteAB (SortedRec b c rem lteBC sortedCRem) =
+sortedReplaceFirstSmaller : {lte : Nat -> Nat -> Type} -> (lteTransitive : {x, y, z : Nat} -> lte x y -> lte y z -> lte x z) -> lte a b -> Sorted lte (b :: rem) -> Sorted lte (a :: rem)
+sortedReplaceFirstSmaller _ _ SortedEmpty impossible
+sortedReplaceFirstSmaller {a} {b} _ _ (SortedOne b) = SortedOne a
+sortedReplaceFirstSmaller {a} {b} lteTransitive lteAB (SortedRec b c rem lteBC sortedCRem) =
     SortedRec a c rem (lteTransitive lteAB lteBC) sortedCRem
 
-sortedToLTEAll : Sorted (a :: rem) -> Forall (LTE a) rem
-sortedToLTEAll SortedEmpty impossible
-sortedToLTEAll {a} {rem = []} (SortedOne a) = ForallEmpty
-sortedToLTEAll {a} {rem = b :: brem} (SortedRec a b brem lteAB sortedBRem) =
-    ForallRec lteAB (sortedToLTEAll (sortedReplaceFirstSmaller lteAB sortedBRem))
+sortedToLTEAll : {lte : Nat -> Nat -> Type} -> (lteTransitive : {x, y, z : Nat} -> lte x y -> lte y z -> lte x z) -> Sorted lte (a :: rem) -> Forall (lte a) rem
+sortedToLTEAll _ SortedEmpty impossible
+sortedToLTEAll {a} {rem = []} _ (SortedOne a) = ForallEmpty
+sortedToLTEAll {a} {rem = b :: brem} lteTransitive (SortedRec a b brem lteAB sortedBRem) =
+    ForallRec lteAB (sortedToLTEAll lteTransitive (sortedReplaceFirstSmaller lteTransitive lteAB sortedBRem))
 
-sortedToAlt : Sorted l -> SortedAlt LTE l
-sortedToAlt {l = []} SortedEmpty = SortedAltEmpty LTE
-sortedToAlt {l = [a]} (SortedOne a) = SortedAltRec LTE a [] ForallEmpty (SortedAltEmpty LTE)
-sortedToAlt {l = (a :: b :: rem)} s @ (SortedRec a b rem lteAB sortedBRem) =
-    SortedAltRec LTE a (b :: rem) (sortedToLTEAll s) (sortedToAlt sortedBRem)
+sortedToAlt : {lte : Nat -> Nat -> Type} -> (lteTransitive : {x, y, z : Nat} -> lte x y -> lte y z -> lte x z) -> Sorted lte l -> SortedAlt lte l
+sortedToAlt {l = []} _ SortedEmpty = SortedAltEmpty
+sortedToAlt {l = [a]} _ (SortedOne a) = SortedAltRec a [] ForallEmpty SortedAltEmpty
+sortedToAlt {l = (a :: b :: rem)} lteTransitive s @ (SortedRec a b rem lteAB sortedBRem) =
+    SortedAltRec a (b :: rem) (sortedToLTEAll lteTransitive s) (sortedToAlt lteTransitive sortedBRem)
 
-sortedFromAlt : SortedAlt LTE l -> Sorted l
-sortedFromAlt (SortedAltEmpty _) = SortedEmpty
-sortedFromAlt (SortedAltRec _ a [] _ _) = SortedOne a
-sortedFromAlt (SortedAltRec _ a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
+sortedFromAlt : {lte : Nat -> Nat -> Type} -> SortedAlt lte l -> Sorted lte l
+sortedFromAlt SortedAltEmpty = SortedEmpty
+sortedFromAlt (SortedAltRec a [] _ _) = SortedOne a
+sortedFromAlt (SortedAltRec a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
     case lteAll_a_b_rem of
         ForallEmpty impossible
         ForallRec lte_a_b _ =>
@@ -82,5 +84,5 @@ sortedFromAlt (SortedAltRec _ a (b :: rem) lteAll_a_b_rem sorted_alt_b_rem) =
 
 -- Prepend an element to a sorted list
 export
-sortedPrepend : Forall (LTE a) xs -> Sorted xs -> Sorted (a :: xs)
-sortedPrepend lteAll_a_xs = (sortedFromAlt . (sortedAltPrepend LTE lteAll_a_xs) . sortedToAlt)
+sortedPrepend : {lte : Nat -> Nat -> Type} -> (lteTransitive : {x, y, z : Nat} -> lte x y -> lte y z -> lte x z ) -> Forall (lte a) xs -> Sorted lte xs -> Sorted lte (a :: xs)
+sortedPrepend {lte} lteTransitive lteAll_a_xs = sortedFromAlt . (sortedAltPrepend lteAll_a_xs) . (sortedToAlt lteTransitive)
