@@ -5,7 +5,6 @@ import Sorted
 import SortedAlt
 import Forall
 import PermSimpleForall
-import Natx
 import TotalOrder
 
 %default total
@@ -83,13 +82,3 @@ sort1 _ (_ :: _) Z {i_length_eq_l} = absurd i_length_eq_l
 export
 sort : {to : TotalOrder a lte} -> (i : List a) -> (o : List a ** (Sorted lte o, PermSimple i o))
 sort {to} i = sort1 to i _
-
--- demo shortcut
-export
-sortNat : (i : List Nat) -> (o : List Nat ** (Sorted LTE o, PermSimple i o))
-sortNat = sort {to = TotalOrderNat}
-
--- another demo shortcut
-export
-sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted GTE o, PermSimple i o))
-sortNatRev = sort {to = TotalOrderNatRev}

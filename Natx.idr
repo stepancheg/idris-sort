@@ -12,8 +12,8 @@ lteAntisymmetric {a = S k} {b = Z} notLTE = LTEZero
 lteAntisymmetric {a = S k} {b = S j} notLTE = LTESucc (lteAntisymmetric {a=k} {b=j} (notLTE . LTESucc))
 
 public export
-TotalOrderNat : TotalOrder Nat LTE
-TotalOrderNat = TotalOrderInst Nat LTE isLTE lteTransitive lteAntisymmetric
+totalOrderNat : TotalOrder Nat LTE
+totalOrderNat = TotalOrderInst Nat LTE isLTE lteTransitive lteAntisymmetric
 
 public export
 gteAntisymmetric : {a, b : Nat} -> Not (GTE a b) -> GTE b a
@@ -28,5 +28,5 @@ gteTransitive : GTE n m -> GTE m p -> GTE n p
 gteTransitive = flip lteTransitive
 
 public export
-TotalOrderNatRev : TotalOrder Nat GTE
-TotalOrderNatRev = TotalOrderInst Nat GTE isGTE gteTransitive gteAntisymmetric
+totalOrderNatRev : TotalOrder Nat GTE
+totalOrderNatRev = TotalOrderInst Nat GTE isGTE gteTransitive gteAntisymmetric
