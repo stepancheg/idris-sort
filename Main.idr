@@ -3,6 +3,7 @@ import Natx
 import Sorted
 import PermSimple
 import TotalOrder
+import Listx
 
 %default total
 
@@ -15,3 +16,9 @@ sortNat = Sort.sort {to = totalOrderNat}
 export
 sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted GTE o, PermSimple i o))
 sortNatRev = Sort.sort {to = totalOrderNatRev}
+
+export
+sortListNat : List (List Nat) -> List (List Nat)
+sortListNat l =
+    let (s ** p) = Sort.sort {to = totalOrderListLte} l in
+    s
