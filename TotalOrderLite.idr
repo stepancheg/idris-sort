@@ -19,3 +19,11 @@ totalOrderLiteFromFull t = TotalOrderLiteImpl_mk (CmpLTE t) cmpLTE_isLTE lte_tra
 public export
 interface TotalOrderLite a where
     totalOrderLite : TotalOrderLiteImpl a
+
+public export
+totalOrderLiteRev : TotalOrderLiteImpl a -> TotalOrderLiteImpl a
+totalOrderLiteRev t = TotalOrderLiteImpl_mk
+    (flip $ lte t)
+    (\x, y => isLTE t y x)
+    (flip $ lte_trans t)
+    (not_lte_implies_gte t)

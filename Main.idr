@@ -4,6 +4,7 @@ import Sorted
 import PermSimple
 import TotalOrderLite
 import ListTotalOrder
+import UnsafeTotalOrder
 
 %default total
 

@@ -82,5 +82,15 @@ sortFull : TotalOrderLite a =>
 sortFull = Sort.sortByFull {t = totalOrderLite}
 
 export
-sort : TotalOrderLite a => List a -> List a
-sort i = fst (sortFull i)
+sortFullRev : TotalOrderLite a =>
+    (i : List a)
+    -> (o : List a ** (Sorted (lte $ TotalOrderLite.totalOrderLiteRev TotalOrderLite.totalOrderLite) o, PermSimple i o))
+sortFullRev = Sort.sortByFull {t = totalOrderLiteRev totalOrderLite}
+
+export
+sortt : TotalOrderLite a => List a -> List a
+sortt i = fst (sortFull i)
+
+export
+sorttRev : TotalOrderLite a => List a -> List a
+sorttRev i = fst (sortFullRev i)
