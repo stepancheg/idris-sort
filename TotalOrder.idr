@@ -1,6 +1,7 @@
 module TotalOrder
 
 %default total
+%access public export
 
 -- Result of comparison
 public export

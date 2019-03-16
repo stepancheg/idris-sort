@@ -12,6 +12,6 @@ record TotalOrderLite (a : Type) where
     lte_trans : {x, y, z : a} -> lte x y -> lte y z -> lte x z -- transitivity
     not_lte_implies_gte : {x, y : a} -> Not (lte x y) -> lte y x -- antisymmetry
 
-export
+public export
 totalOrderLiteFromFull : TotalOrder a -> TotalOrderLite a
 totalOrderLiteFromFull t = TotalOrderLite_mk (CmpLTE t) cmpLTE_isLTE lte_trans not_lte_implies_gte
