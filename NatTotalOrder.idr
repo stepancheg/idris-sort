@@ -85,7 +85,7 @@ totalOrderNat =
 
 export
 totalOrderNat_rev : TotalOrderImpl Nat
-totalOrderNat_rev = cmpTypes_rev totalOrderNat
+totalOrderNat_rev = totalOrderRev totalOrderNat
 
 export
 totalOrderLiteNat : TotalOrderLiteImpl Nat

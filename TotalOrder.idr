@@ -43,8 +43,8 @@ isLT t x y with (cmp t x y)
     isLT t x y | (XGT gt_x_y) = No (\lt_x_y => lt_implies_not_gt t lt_x_y gt_x_y)
 
 public export
-cmpTypes_rev : TotalOrderImpl a -> TotalOrderImpl a
-cmpTypes_rev t = TotalOrderImpl_mk
+totalOrderRev : TotalOrderImpl a -> TotalOrderImpl a
+totalOrderRev t = TotalOrderImpl_mk
     (\x, y => lt t y x)
     (\x, y => eq t y x)
     (\x, y => case cmp t x y of
