@@ -65,7 +65,6 @@ lteListNatTransitive (LTEListLT lt_x_y) (LTEListRec eq_y_z lte_ys_zs) =
     LTEListLT (lt_eq_implies_lt _ lt_x_y eq_y_z)
 lteListNatTransitive (LTEListRec eq_x_y lte_xs_ys) (LTEListLT lt_y_z) =
     LTEListLT (eq_lt_implies_lt _ eq_x_y lt_y_z)
---lteListNatTransitive _ _ = ?help
 
 private
 flipPlus : {a, b, c : Nat} -> a + b = c -> b + a = c
