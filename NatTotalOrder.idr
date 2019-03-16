@@ -1,5 +1,5 @@
--- Nat extensions
-module Natx
+-- Implementation of TotalOrder and TotalOrderLite for Nat
+module NatTotalOrder
 
 import TotalOrder
 import TotalOrderLite
@@ -89,8 +89,8 @@ totalOrderNat_rev = cmpTypes_rev totalOrderNat
 
 export
 totalOrderLiteNat : TotalOrderLite Nat
-totalOrderLiteNat = totalOrderLiteFromFull Natx.totalOrderNat
+totalOrderLiteNat = totalOrderLiteFromFull totalOrderNat
 
 export
 totalOrderLiteNatRev : TotalOrderLite Nat
-totalOrderLiteNatRev = totalOrderLiteFromFull Natx.totalOrderNat_rev
+totalOrderLiteNatRev = totalOrderLiteFromFull totalOrderNat_rev

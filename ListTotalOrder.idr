@@ -1,8 +1,9 @@
-module Listx
+-- Implementation of TotalOrderLite for List
+module ListTotalOrder
 
 import TotalOrder
 import TotalOrderLite
-import Natx
+import NatTotalOrder
 
 %default total
 %access export

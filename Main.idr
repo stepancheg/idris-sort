@@ -1,21 +1,21 @@
 import Sort
-import Natx
+import NatTotalOrder
 import Sorted
 import PermSimple
 import TotalOrderLite
-import Listx
+import ListTotalOrder
 
 %default total
 
 -- demo shortcut
 export
-sortNat : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderLiteNat) o, PermSimple i o))
-sortNat = Sort.sort {t = Natx.totalOrderLiteNat}
+sortNat : (i : List Nat) -> (o : List Nat ** (Sorted (lte NatTotalOrder.totalOrderLiteNat) o, PermSimple i o))
+sortNat = Sort.sort {t = NatTotalOrder.totalOrderLiteNat}
 
 -- another demo shortcut
 export
-sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderLiteNatRev) o, PermSimple i o))
-sortNatRev = Sort.sort {t = Natx.totalOrderLiteNatRev}
+sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted (lte NatTotalOrder.totalOrderLiteNatRev) o, PermSimple i o))
+sortNatRev = Sort.sort {t = NatTotalOrder.totalOrderLiteNatRev}
 
 export
 sortListNat : List (List Nat) -> List (List Nat)
