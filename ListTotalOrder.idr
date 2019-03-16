@@ -131,10 +131,10 @@ lteListNatAntisymmetric : {t : TotalOrder a} -> Not (LTEListNat t xs ys) -> LTEL
 lteListNatAntisymmetric not_lte = lteListNatAntisymmetricHelp not_lte
 
 export
-totalOrderList : TotalOrder a -> TotalOrderLite (List a)
+totalOrderList : TotalOrder a -> TotalOrderLiteImpl (List a)
 totalOrderList t =
-    TotalOrderLite_mk (LTEListNat t) isLTEListNat lteListNatTransitive lteListNatAntisymmetric
+    TotalOrderLiteImpl_mk (LTEListNat t) isLTEListNat lteListNatTransitive lteListNatAntisymmetric
 
 export
-totalOrderListLte : TotalOrderLite (List Nat)
+totalOrderListLte : TotalOrderLiteImpl (List Nat)
 totalOrderListLte = totalOrderList totalOrderNat

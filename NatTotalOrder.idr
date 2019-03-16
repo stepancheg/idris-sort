@@ -88,13 +88,13 @@ totalOrderNat_rev : TotalOrder Nat
 totalOrderNat_rev = cmpTypes_rev totalOrderNat
 
 export
-totalOrderLiteNat : TotalOrderLite Nat
+totalOrderLiteNat : TotalOrderLiteImpl Nat
 totalOrderLiteNat = totalOrderLiteFromFull totalOrderNat
 
 export
-totalOrderLiteNatRev : TotalOrderLite Nat
+totalOrderLiteNatRev : TotalOrderLiteImpl Nat
 totalOrderLiteNatRev = totalOrderLiteFromFull totalOrderNat_rev
 
 export
-implementation TotalOrderLiteInterface Nat where
+implementation TotalOrderLite Nat where
     totalOrderLite = totalOrderLiteNat

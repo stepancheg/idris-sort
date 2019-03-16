@@ -27,7 +27,7 @@ lteAllPrepend {lteTransitive} lte_x_y fa_lte_y_zs =
 
 -- Remove min element from a list
 removeMinElement :
-    (t : TotalOrderLite a)
+    (t : TotalOrderLiteImpl a)
     -> (xxs : List a)
     -> {auto ok : NonEmpty xxs}
     -> (x ** xs ** (PermSimple xxs (x :: xs), Forall (lte t x) xs))
@@ -46,7 +46,7 @@ removeMinElement t (x :: y :: rem) =
 
 -- Helper function for sort implementation
 sort1 :
-    (t : TotalOrderLite a)
+    (t : TotalOrderLiteImpl a)
     -> (i : List a)
     -> (l : Nat) -- parameter is only to prove totality
     -> {auto i_length_eq_l : (length i = l)}
@@ -68,19 +68,19 @@ sort1 _ (_ :: _) Z {i_length_eq_l} = absurd i_length_eq_l
 
 -- sort implementation
 export
-sortByFull : {t : TotalOrderLite a} -> (i : List a) -> (o : List a ** (Sorted (lte t) o, PermSimple i o))
+sortByFull : {t : TotalOrderLiteImpl a} -> (i : List a) -> (o : List a ** (Sorted (lte t) o, PermSimple i o))
 sortByFull {t} i = sort1 t i _
 
 export
-sortBy : {t : TotalOrderLite a} -> List a -> List a
+sortBy : {t : TotalOrderLiteImpl a} -> List a -> List a
 sortBy {t} i = fst (sortByFull {t} i)
 
 export
-sortFull : TotalOrderLiteInterface a =>
+sortFull : TotalOrderLite a =>
     (i : List a)
     -> (o : List a ** (Sorted (lte TotalOrderLite.totalOrderLite) o, PermSimple i o))
 sortFull = Sort.sortByFull {t = totalOrderLite}
 
 export
-sort : TotalOrderLiteInterface a => List a -> List a
+sort : TotalOrderLite a => List a -> List a
 sort i = fst (sortFull i)
