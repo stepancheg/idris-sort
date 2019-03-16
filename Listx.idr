@@ -22,11 +22,6 @@ natCmp (S a) (S b) = natCmpSucc (natCmp a b)
 natCmp Z (S b) = NatLt $ LTESucc LTEZero
 natCmp (S a) Z = NatGt $ LTESucc LTEZero
 
-natCmpMirror : NatCmp a b -> NatCmp b a
-natCmpMirror (NatLt lt) = NatGt lt
-natCmpMirror (NatGt gt) = NatLt gt
-natCmpMirror NatEq = NatEq
-
 export
 data LTEListNat : (xs, ys : List Nat) -> Type where
     LTEListNatZero : LTEListNat [] right
