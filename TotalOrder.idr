@@ -11,8 +11,8 @@ data OrderingX : lt -> eq -> gt -> Type where
     XGT : {lt, eq, gt : Type} -> gt -> OrderingX lt eq gt
 
 public export
-record TotalOrder (a : Type) where
-    constructor TotalOrder_mk
+record TotalOrderImpl (a : Type) where
+    constructor TotalOrderImpl_mk
     -- <
     lt : a -> a -> Type
     -- =
@@ -32,19 +32,19 @@ record TotalOrder (a : Type) where
     eq_lt_implies_lt : {x, y, z : a} -> eq x y -> lt y z -> lt x z
 
 public export
-gt : (t : TotalOrder a) -> a -> a -> Type
+gt : (t : TotalOrderImpl a) -> a -> a -> Type
 gt t x y = lt t y x
 
 public export
-isLT : (t : TotalOrder a) -> (x, y : a) -> Dec (lt t x y)
+isLT : (t : TotalOrderImpl a) -> (x, y : a) -> Dec (lt t x y)
 isLT t x y with (cmp t x y)
     isLT t x y | (XLT lt_x_y) = Yes lt_x_y
     isLT t x y | (XEQ eq_x_y) = No (\lt_x_y => lt_implies_not_eq t lt_x_y eq_x_y)
     isLT t x y | (XGT gt_x_y) = No (\lt_x_y => lt_implies_not_gt t lt_x_y gt_x_y)
 
 public export
-cmpTypes_rev : TotalOrder a -> TotalOrder a
-cmpTypes_rev t = TotalOrder_mk
+cmpTypes_rev : TotalOrderImpl a -> TotalOrderImpl a
+cmpTypes_rev t = TotalOrderImpl_mk
     (\x, y => lt t y x)
     (\x, y => eq t y x)
     (\x, y => case cmp t x y of
@@ -62,7 +62,7 @@ cmpTypes_rev t = TotalOrder_mk
     (flip $ lt_eq_implies_lt t)
 
 public export
-data CmpLTE : TotalOrder a -> a -> a -> Type where
+data CmpLTE : TotalOrderImpl a -> a -> a -> Type where
     LTELT : lt t x y -> CmpLTE t x y
     LTEEQ : eq t x y -> CmpLTE t x y
 

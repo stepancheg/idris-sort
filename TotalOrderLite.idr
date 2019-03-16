@@ -13,7 +13,7 @@ record TotalOrderLiteImpl (a : Type) where
     not_lte_implies_gte : {x, y : a} -> Not (lte x y) -> lte y x -- antisymmetry
 
 public export
-totalOrderLiteFromFull : TotalOrder a -> TotalOrderLiteImpl a
+totalOrderLiteFromFull : TotalOrderImpl a -> TotalOrderLiteImpl a
 totalOrderLiteFromFull t = TotalOrderLiteImpl_mk (CmpLTE t) cmpLTE_isLTE lte_trans not_lte_implies_gte
 
 public export
