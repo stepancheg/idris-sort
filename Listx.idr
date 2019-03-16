@@ -1,6 +1,7 @@
 module Listx
 
 import TotalOrder
+import TotalOrderLite
 import Natx
 
 %default total
@@ -174,6 +175,6 @@ lteListNatAntisymmetric : Not (LTEListNat xs ys) -> LTEListNat ys xs
 lteListNatAntisymmetric not_lte = lteListNatAntisymmetricHelp not_lte
 
 export
-totalOrderListLte : TotalOrder (List Nat) LTEListNat
+totalOrderListLte : TotalOrderLite (List Nat) LTEListNat
 totalOrderListLte =
     TotalOrderInst (List Nat) LTEListNat isLTEListNat lteListNatTransitive lteListNatAntisymmetric

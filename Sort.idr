@@ -5,7 +5,7 @@ import Sorted
 import SortedAlt
 import Forall
 import PermSimpleForall
-import TotalOrder
+import TotalOrderLite
 
 %default total
 
@@ -26,7 +26,7 @@ lteAllPrepend {lteTransitive} lte_x_y fa_lte_y_zs =
     forallConcat (forall1 lte_x_y) (lteAllSmaller {lteTransitive} lte_x_y fa_lte_y_zs)
 
 totalOrderUnpack : {lte : a -> a -> Type}
-    -> TotalOrder a lte
+    -> TotalOrderLite a lte
     -> (
         ((x, y : a) -> Dec (lte x y)),
         ({x, y, z : a} -> lte x y -> lte y z -> lte x z),
@@ -37,7 +37,7 @@ totalOrderUnpack (TotalOrderInst _ _ isLTE lteTransitive lteAntisymmetric) =
 
 -- Remove min element from a list
 removeMinElement : {lte : a -> a -> Type}
-    -> TotalOrder a lte
+    -> TotalOrderLite a lte
     -> (xxs : List a)
     -> {auto ok : NonEmpty xxs}
     -> (x ** xs ** (PermSimple xxs (x :: xs), Forall (lte x) xs))
@@ -57,7 +57,7 @@ removeMinElement to (x :: y :: rem) =
 
 -- Helper function for sort implementation
 sort1 : {lte: a -> a -> Type}
-    -> TotalOrder a lte
+    -> TotalOrderLite a lte
     -> (i : List a)
     -> (l : Nat) -- parameter is only to prove totality
     -> {auto i_length_eq_l : (length i = l)}
@@ -80,11 +80,11 @@ sort1 _ (_ :: _) Z {i_length_eq_l} = absurd i_length_eq_l
 
 -- sort implementation
 export
-sort : {to : TotalOrder a lte} -> (i : List a) -> (o : List a ** (Sorted lte o, PermSimple i o))
+sort : {to : TotalOrderLite a lte} -> (i : List a) -> (o : List a ** (Sorted lte o, PermSimple i o))
 sort {to} i = sort1 to i _
 
 export
-sortSimple : {to : TotalOrder a lte} -> List a -> List a
+sortSimple : {to : TotalOrderLite a lte} -> List a -> List a
 sortSimple {to} i =
     let (s ** p) = sort {to} i in
     s

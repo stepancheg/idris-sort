@@ -61,34 +61,23 @@ gt_implies_not_lte : lt t y x -> Not (CmpLTE t x y)
 gt_implies_not_lte gt (LTELT lt) = lt_implies_not_gt _ gt lt
 gt_implies_not_lte gt (LTEEQ eq) = lt_implies_not_eq _ gt (eq_symm _ eq)
 
+export
 lte_trans : CmpLTE t x y -> CmpLTE t y z -> CmpLTE t x z
 lte_trans (LTELT lt_x_y) (LTELT lt_y_z) = LTELT (lt_trans t lt_x_y lt_y_z)
 lte_trans (LTEEQ eq_x_y) (LTEEQ eq_y_z) = LTEEQ (eq_trans t eq_x_y eq_y_z)
 lte_trans (LTELT lt_x_y) (LTEEQ eq_y_z) = LTELT (lt_eq_implies_lt t lt_x_y eq_y_z)
 lte_trans (LTEEQ eq_x_y) (LTELT lt_y_z) = LTELT (eq_lt_implies_lt t eq_x_y lt_y_z)
 
+export
 not_lte_implies_gte : Not (CmpLTE t x y) -> CmpLTE t y x
 not_lte_implies_gte {t} {x} {y} not_lte with (cmp t x y)
     not_lte_implies_gte {t} {x} {y} not_lte | (XLT lt) = absurd $ not_lte (LTELT lt)
     not_lte_implies_gte {t} {x} {y} not_lte | (XEQ eq) = absurd $ not_lte (LTEEQ eq)
     not_lte_implies_gte {t} {x} {y} not_lte | (XGT gt) = LTELT gt
 
+export
 cmpLTE_isLTE : (x, y : a) -> Dec (CmpLTE t x y)
 cmpLTE_isLTE {t} x y with (cmp t x y)
     cmpLTE_isLTE x y | (XLT lt) = Yes (LTELT lt)
     cmpLTE_isLTE x y | (XEQ eq) = Yes (LTEEQ eq)
     cmpLTE_isLTE {t} x y | (XGT gt) = No (gt_implies_not_lte gt)
-
-public export
-data TotalOrder : (a : Type) -> (a -> a -> Type) -> Type where
-    TotalOrderInst :
-        (a : Type)
-        -> (lte : a -> a -> Type) -- <=
-        -> ((x, y : a) -> Dec (lte x y)) -- isLTE
-        -> ({x, y, z : a} -> lte x y -> lte y z -> lte x z) -- transitivity
-        -> ({x, y : a} -> Not (lte x y) -> lte y x) -- antisymmetry
-        -> TotalOrder a lte
-
-export
-totalOrderFromCmpTypes : (t : CmpTypes a) -> TotalOrder a (CmpLTE t)
-totalOrderFromCmpTypes {a} t = TotalOrderInst a (CmpLTE t) cmpLTE_isLTE lte_trans not_lte_implies_gte

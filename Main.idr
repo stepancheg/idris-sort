@@ -2,7 +2,7 @@ import Sort
 import Natx
 import Sorted
 import PermSimple
-import TotalOrder
+import TotalOrderLite
 import Listx
 
 %default total

@@ -2,6 +2,7 @@
 module Natx
 
 import TotalOrder
+import TotalOrderLite
 
 %default total
 
@@ -112,9 +113,9 @@ LTX : Nat -> Nat -> Type
 LTX = lt nat_cmp_types
 
 export
-totalOrderNat : TotalOrder Nat LTEX
+totalOrderNat : TotalOrderLite Nat LTEX
 totalOrderNat = totalOrderFromCmpTypes Natx.nat_cmp_types
 
 export
-totalOrderNatRev : TotalOrder Nat Rev_LTEX
+totalOrderNatRev : TotalOrderLite Nat Rev_LTEX
 totalOrderNatRev = totalOrderFromCmpTypes Natx.nat_cmp_types_rev
