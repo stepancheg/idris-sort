@@ -47,23 +47,23 @@ lteEmptyImpliesEmpty (LTEListRec eq_x_y xs_ys) impossible
 lteEmptyImpliesEmpty (LTEListLT lt_x_y) impossible
 
 private
-lteListNatTransitiveHelp : {t : TotalOrderImpl a} -> xs = [] -> LTEList t xs []
-lteListNatTransitiveHelp Refl = LTEListZero
+lteListTransitiveHelp : {t : TotalOrderImpl a} -> xs = [] -> LTEList t xs []
+lteListTransitiveHelp Refl = LTEListZero
 
 private
-lteListNatTransitive : {t : TotalOrderImpl a} -> LTEList t xs ys -> LTEList t ys zs -> LTEList t xs zs
-lteListNatTransitive LTEListZero _ =
+lteListTransitive : {t : TotalOrderImpl a} -> LTEList t xs ys -> LTEList t ys zs -> LTEList t xs zs
+lteListTransitive LTEListZero _ =
     LTEListZero
-lteListNatTransitive {xs} {zs = []} lte_xs_ys LTEListZero =
+lteListTransitive {xs} {zs = []} lte_xs_ys LTEListZero =
     let refl : (xs = []) = lteEmptyImpliesEmpty lte_xs_ys in
-    lteListNatTransitiveHelp refl
-lteListNatTransitive (LTEListLT lt_x_y) (LTEListLT lt_y_z) =
+    lteListTransitiveHelp refl
+lteListTransitive (LTEListLT lt_x_y) (LTEListLT lt_y_z) =
     LTEListLT (lt_trans t lt_x_y lt_y_z)
-lteListNatTransitive (LTEListRec eq_x_y xs_ys) (LTEListRec eq_y_z ys_zs) =
-    LTEListRec (eq_trans _ eq_x_y eq_y_z) (lteListNatTransitive xs_ys ys_zs)
-lteListNatTransitive (LTEListLT lt_x_y) (LTEListRec eq_y_z lte_ys_zs) =
+lteListTransitive (LTEListRec eq_x_y xs_ys) (LTEListRec eq_y_z ys_zs) =
+    LTEListRec (eq_trans _ eq_x_y eq_y_z) (lteListTransitive xs_ys ys_zs)
+lteListTransitive (LTEListLT lt_x_y) (LTEListRec eq_y_z lte_ys_zs) =
     LTEListLT (lt_eq_implies_lt _ lt_x_y eq_y_z)
-lteListNatTransitive (LTEListRec eq_x_y lte_xs_ys) (LTEListLT lt_y_z) =
+lteListTransitive (LTEListRec eq_x_y lte_xs_ys) (LTEListLT lt_y_z) =
     LTEListLT (eq_lt_implies_lt _ eq_x_y lt_y_z)
 
 private
@@ -105,34 +105,34 @@ unlength1 {xs} {ys} rr =
     absurd $ sumZeroImpliesRightZero qw
 
 private
-lteListNatAntisymmetricHelp : {t : TotalOrderImpl a}
+lteListAntisymmetricHelp : {t : TotalOrderImpl a}
     -> Not (LTEList t xs ys)
     -> {l : Nat}
     -> {auto ok : length xs + length ys = l}
     -> LTEList t ys xs
-lteListNatAntisymmetricHelp {ys = []} not_lte = LTEListZero
-lteListNatAntisymmetricHelp {xs = []} not_lte = absurd $ not_lte LTEListZero
-lteListNatAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys} {l = S (S l)} {ok} not_lte with (cmp t x y)
-    lteListNatAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys}                    not_lte | (XLT lt_x_y) =
+lteListAntisymmetricHelp {ys = []} not_lte = LTEListZero
+lteListAntisymmetricHelp {xs = []} not_lte = absurd $ not_lte LTEListZero
+lteListAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys} {l = S (S l)} {ok} not_lte with (cmp t x y)
+    lteListAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys}                    not_lte | (XLT lt_x_y) =
         absurd $ not_lte (LTEListLT lt_x_y)
-    lteListNatAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys}                    not_lte | (XGT gt_x_y) =
+    lteListAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys}                    not_lte | (XGT gt_x_y) =
         LTEListLT gt_x_y
-    lteListNatAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys} {l = S (S l)} {ok} not_lte | (XEQ eq_x_y) = case isLTEList {t} ys xs of
+    lteListAntisymmetricHelp {t} {xs = x :: xs} {ys = y :: ys} {l = S (S l)} {ok} not_lte | (XEQ eq_x_y) = case isLTEList {t} ys xs of
         Yes prf => LTEListRec {t} (eq_symm t eq_x_y) prf
         No contra =>
-            let xx = lteListNatAntisymmetricHelp {t} {l} {ok = unlength {x} {y} ok} contra in
+            let xx = lteListAntisymmetricHelp {t} {l} {ok = unlength {x} {y} ok} contra in
             absurd $ not_lte (LTEListRec {t} eq_x_y xx)
-lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = Z} {ok} _ = absurd (unlength0 {x} {y} ok)
-lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = S Z} {ok} _ = absurd (unlength1 {x} {y} ok)
+lteListAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = Z} {ok} _ = absurd (unlength0 {x} {y} ok)
+lteListAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = S Z} {ok} _ = absurd (unlength1 {x} {y} ok)
 
 private
-lteListNatAntisymmetric : {t : TotalOrderImpl a} -> Not (LTEList t xs ys) -> LTEList t ys xs
-lteListNatAntisymmetric not_lte = lteListNatAntisymmetricHelp not_lte
+lteListAntisymmetric : {t : TotalOrderImpl a} -> Not (LTEList t xs ys) -> LTEList t ys xs
+lteListAntisymmetric not_lte = lteListAntisymmetricHelp not_lte
 
 export
 totalOrderList : TotalOrderImpl a -> TotalOrderLiteImpl (List a)
 totalOrderList t =
-    TotalOrderLiteImpl_mk (LTEList t) isLTEList lteListNatTransitive lteListNatAntisymmetric
+    TotalOrderLiteImpl_mk (LTEList t) isLTEList lteListTransitive lteListAntisymmetric
 
 export
 totalOrderListLte : TotalOrderLiteImpl (List Nat)
