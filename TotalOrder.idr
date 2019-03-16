@@ -10,8 +10,8 @@ data OrderingX : lt -> eq -> gt -> Type where
     XGT : {lt, eq, gt : Type} -> gt -> OrderingX lt eq gt
 
 public export
-record CmpTypes (a : Type) where
-    constructor CmpTypes_mk
+record TotalOrder (a : Type) where
+    constructor TotalOrder_mk
     -- <
     lt : a -> a -> Type
     -- =
@@ -30,12 +30,12 @@ record CmpTypes (a : Type) where
     lt_eq_implies_lt : {x, y, z : a} -> lt x y -> eq y z -> lt x z
     eq_lt_implies_lt : {x, y, z : a} -> eq x y -> lt y z -> lt x z
 
-gt : (t : CmpTypes a) -> a -> a -> Type
+gt : (t : TotalOrder a) -> a -> a -> Type
 gt t x y = lt t y x
 
 export
-cmpTypes_rev : CmpTypes a -> CmpTypes a
-cmpTypes_rev t = CmpTypes_mk
+cmpTypes_rev : TotalOrder a -> TotalOrder a
+cmpTypes_rev t = TotalOrder_mk
     (\x, y => lt t y x)
     (\x, y => eq t y x)
     (\x, y => case cmp t x y of
@@ -53,7 +53,7 @@ cmpTypes_rev t = CmpTypes_mk
     (flip $ lt_eq_implies_lt t)
 
 export
-data CmpLTE : CmpTypes a -> a -> a -> Type where
+data CmpLTE : TotalOrder a -> a -> a -> Type where
     LTELT : lt t x y -> CmpLTE t x y
     LTEEQ : eq t x y -> CmpLTE t x y
 

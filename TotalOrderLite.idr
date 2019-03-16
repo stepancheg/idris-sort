@@ -15,5 +15,5 @@ data TotalOrderLite : (a : Type) -> (a -> a -> Type) -> Type where
         -> TotalOrderLite a lte
 
 export
-totalOrderFromCmpTypes : (t : CmpTypes a) -> TotalOrderLite a (CmpLTE t)
-totalOrderFromCmpTypes {a} t = TotalOrderInst a (CmpLTE t) cmpLTE_isLTE lte_trans not_lte_implies_gte
+totalOrderLiteFromFull : (t : TotalOrder a) -> TotalOrderLite a (CmpLTE t)
+totalOrderLiteFromFull {a} t = TotalOrderInst a (CmpLTE t) cmpLTE_isLTE lte_trans not_lte_implies_gte

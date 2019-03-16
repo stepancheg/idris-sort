@@ -81,9 +81,9 @@ nat_eq_lt_implies_lt : x = y -> LT y z -> LT x z
 nat_eq_lt_implies_lt Refl lt = lt
 
 export
-nat_cmp_types : CmpTypes Nat
+nat_cmp_types : TotalOrder Nat
 nat_cmp_types =
-    CmpTypes_mk
+    TotalOrder_mk
         LT
         (=)
         nat_cmp
@@ -97,7 +97,7 @@ nat_cmp_types =
         nat_eq_lt_implies_lt
 
 export
-nat_cmp_types_rev : CmpTypes Nat
+nat_cmp_types_rev : TotalOrder Nat
 nat_cmp_types_rev = cmpTypes_rev nat_cmp_types
 
 export
@@ -114,8 +114,8 @@ LTX = lt nat_cmp_types
 
 export
 totalOrderNat : TotalOrderLite Nat LTEX
-totalOrderNat = totalOrderFromCmpTypes Natx.nat_cmp_types
+totalOrderNat = totalOrderLiteFromFull Natx.nat_cmp_types
 
 export
 totalOrderNatRev : TotalOrderLite Nat Rev_LTEX
-totalOrderNatRev = totalOrderFromCmpTypes Natx.nat_cmp_types_rev
+totalOrderNatRev = totalOrderLiteFromFull Natx.nat_cmp_types_rev
