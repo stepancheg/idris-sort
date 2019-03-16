@@ -6,20 +6,6 @@ import TotalOrderLite
 
 %default total
 
-lteAntisymmetric : {a, b : Nat} -> Not (LTE a b) -> LTE b a
-lteAntisymmetric {a = Z} notLTE = absurd (notLTE LTEZero)
-lteAntisymmetric {a = S k} {b = Z} notLTE = LTEZero
-lteAntisymmetric {a = S k} {b = S j} notLTE = LTESucc (lteAntisymmetric {a=k} {b=j} (notLTE . LTESucc))
-
-gteAntisymmetric : {a, b : Nat} -> Not (GTE a b) -> GTE b a
-gteAntisymmetric {a} {b} notGTE = lteAntisymmetric {a=b} {b=a} notGTE
-
-isGTE : (m, n : Nat) -> Dec (GTE m n)
-isGTE m n = isLTE n m
-
-gteTransitive : GTE n m -> GTE m p -> GTE n p
-gteTransitive = flip lteTransitive
-
 nat_cmp : (x, y : Nat) -> OrderingX (LT x y) (x = y) (LT y x)
 nat_cmp Z Z = XEQ (the (Z = Z) Refl)
 nat_cmp (S _) Z = XGT (LTESucc LTEZero)
