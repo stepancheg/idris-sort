@@ -82,3 +82,9 @@ sort1 _ (_ :: _) Z {i_length_eq_l} = absurd i_length_eq_l
 export
 sort : {to : TotalOrder a lte} -> (i : List a) -> (o : List a ** (Sorted lte o, PermSimple i o))
 sort {to} i = sort1 to i _
+
+export
+sortSimple : {to : TotalOrder a lte} -> List a -> List a
+sortSimple {to} i =
+    let (s ** p) = sort {to} i in
+    s

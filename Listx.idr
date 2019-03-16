@@ -1,6 +1,7 @@
 module Listx
 
 import TotalOrder
+import Natx
 
 %default total
 
@@ -31,21 +32,15 @@ data LTEListNat : (xs, ys : List Nat) -> Type where
     LTEListNatRec : (z : Nat) -> LTEListNat xs ys -> LTEListNat (z :: xs) (z :: ys)
     LTEListNatLT : LT x y -> LTEListNat (x :: xs) (y :: ys)
 
-gtNotLt : GT x y -> Not (LT x y)
-gtNotLt LTEZero _ impossible
-gtNotLt _ LTEZero impossible
-gtNotLt (LTESucc gt_x_y) (LTESucc lt_x_y) = gtNotLt gt_x_y lt_x_y
-
 notGtSelf : (x : Nat) -> Not (GT x x)
-notGtSelf _ LTEZero impossible
-notGtSelf _ (LTESucc gt_x_x) = notGtSelf _ gt_x_x
+notGtSelf x = nat_eq_implies_not_lt Refl
 
 notLtSelf : (x : Nat) -> Not (LT x x)
-notLtSelf = notGtSelf
+notLtSelf x = nat_eq_implies_not_lt Refl
 
 gtFirstNotLTE : GT x y -> Not (LTEListNat (x :: xs) (y :: ys))
 gtFirstNotLTE gt_x_y LTEListNatZero impossible
-gtFirstNotLTE gt_x_y (LTEListNatLT lt_x_y) = gtNotLt gt_x_y lt_x_y
+gtFirstNotLTE gt_x_y (LTEListNatLT lt_x_y) = nat_lt_implies_not_gt gt_x_y lt_x_y
 gtFirstNotLTE gt_x_y (LTEListNatRec z lte_xs_ys) = notGtSelf z gt_x_y
 
 lteListNatSucc : LTEListNat (x :: xs) (y :: ys) -> LTEListNat ((S x) :: xs) ((S y) :: ys)
@@ -74,9 +69,6 @@ data ListDec : List Nat -> Type where
     ListDecZ : ListDec xs -> ListDec (Z :: xs)
     ListDecS : (x : Nat) -> ListDec (x :: xs) -> ListDec (S x :: xs)
 
-unS : (S x = S y) -> x = y
-unS Refl = Refl
-
 isLT : (m, n : Nat) -> Dec (LT m n)
 isLT m n = isLTE (S m) n
 
@@ -85,10 +77,10 @@ listNatWeight [] = Z
 listNatWeight (x :: xs) = 1 + x + listNatWeight xs
 
 listNatWeightUnS : listNatWeight (S x :: xs) = S w -> listNatWeight (x :: xs) = w
-listNatWeightUnS = unS
+listNatWeightUnS = nat_refl_pred
 
 listNatWeightUnZ : listNatWeight (Z :: xs) = S w -> listNatWeight xs = w
-listNatWeightUnZ = unS
+listNatWeightUnZ = nat_refl_pred
 
 notEmptyListWeightNotZ : Not (listNatWeight (x :: xs) = Z)
 notEmptyListWeightNotZ Refl impossible
@@ -116,9 +108,6 @@ export
 isLTEListNat : (xs, ys : List Nat) -> Dec (LTEListNat xs ys)
 isLTEListNat xs ys = isLTEListNat1 (listNatToListDec xs) (listNatToListDec ys)
 
-ltTransitive : LT x y -> LT y z -> LT x z
-ltTransitive lt_x_y lt_y_z = lteTransitive (lteSuccRight lt_x_y) lt_y_z
-
 lteEmptyImpliesEmpty : LTEListNat xs [] -> xs = []
 lteEmptyImpliesEmpty LTEListNatZero = Refl
 lteEmptyImpliesEmpty (LTEListNatRec z xs_ys) impossible
@@ -127,7 +116,7 @@ lteEmptyImpliesEmpty (LTEListNatLT x_y) impossible
 lteListNatTransitive : LTEListNat xs ys -> LTEListNat ys zs -> LTEListNat xs zs
 lteListNatTransitive LTEListNatZero _ = LTEListNatZero
 lteListNatTransitive lte_xs_ys LTEListNatZero = rewrite (lteEmptyImpliesEmpty lte_xs_ys) in LTEListNatZero
-lteListNatTransitive (LTEListNatLT lt_x_y) (LTEListNatLT lt_y_z) = LTEListNatLT (ltTransitive lt_x_y lt_y_z)
+lteListNatTransitive (LTEListNatLT lt_x_y) (LTEListNatLT lt_y_z) = LTEListNatLT (nat_lt_trans lt_x_y lt_y_z)
 lteListNatTransitive (LTEListNatRec z xs_ys) (LTEListNatRec z ys_zs) =
     LTEListNatRec z (lteListNatTransitive xs_ys ys_zs)
 lteListNatTransitive (LTEListNatLT lt_x_y) (LTEListNatRec w lte_ys_zs) = LTEListNatLT lt_x_y
