@@ -34,14 +34,14 @@ public export
 gt : (t : TotalOrder a) -> a -> a -> Type
 gt t x y = lt t y x
 
-export
+public export
 isLT : (t : TotalOrder a) -> (x, y : a) -> Dec (lt t x y)
 isLT t x y with (cmp t x y)
     isLT t x y | (XLT lt_x_y) = Yes lt_x_y
     isLT t x y | (XEQ eq_x_y) = No (\lt_x_y => lt_implies_not_eq t lt_x_y eq_x_y)
     isLT t x y | (XGT gt_x_y) = No (\lt_x_y => lt_implies_not_gt t lt_x_y gt_x_y)
 
-export
+public export
 cmpTypes_rev : TotalOrder a -> TotalOrder a
 cmpTypes_rev t = TotalOrder_mk
     (\x, y => lt t y x)
@@ -60,7 +60,7 @@ cmpTypes_rev t = TotalOrder_mk
     (flip $ eq_lt_implies_lt t)
     (flip $ lt_eq_implies_lt t)
 
-export
+public export
 data CmpLTE : TotalOrder a -> a -> a -> Type where
     LTELT : lt t x y -> CmpLTE t x y
     LTEEQ : eq t x y -> CmpLTE t x y
@@ -69,21 +69,21 @@ gt_implies_not_lte : lt t y x -> Not (CmpLTE t x y)
 gt_implies_not_lte gt (LTELT lt) = lt_implies_not_gt _ gt lt
 gt_implies_not_lte gt (LTEEQ eq) = lt_implies_not_eq _ gt (eq_symm _ eq)
 
-export
+public export
 lte_trans : CmpLTE t x y -> CmpLTE t y z -> CmpLTE t x z
 lte_trans (LTELT lt_x_y) (LTELT lt_y_z) = LTELT (lt_trans t lt_x_y lt_y_z)
 lte_trans (LTEEQ eq_x_y) (LTEEQ eq_y_z) = LTEEQ (eq_trans t eq_x_y eq_y_z)
 lte_trans (LTELT lt_x_y) (LTEEQ eq_y_z) = LTELT (lt_eq_implies_lt t lt_x_y eq_y_z)
 lte_trans (LTEEQ eq_x_y) (LTELT lt_y_z) = LTELT (eq_lt_implies_lt t eq_x_y lt_y_z)
 
-export
+public export
 not_lte_implies_gte : Not (CmpLTE t x y) -> CmpLTE t y x
 not_lte_implies_gte {t} {x} {y} not_lte with (cmp t x y)
     not_lte_implies_gte {t} {x} {y} not_lte | (XLT lt) = absurd $ not_lte (LTELT lt)
     not_lte_implies_gte {t} {x} {y} not_lte | (XEQ eq) = absurd $ not_lte (LTEEQ eq)
     not_lte_implies_gte {t} {x} {y} not_lte | (XGT gt) = LTELT gt
 
-export
+public export
 cmpLTE_isLTE : (x, y : a) -> Dec (CmpLTE t x y)
 cmpLTE_isLTE {t} x y with (cmp t x y)
     cmpLTE_isLTE x y | (XLT lt) = Yes (LTELT lt)

@@ -102,18 +102,18 @@ totalOrderNat =
         nat_lt_eq_implies_lt
         nat_eq_lt_implies_lt
 
-export
+public export
 totalOrderNat_rev : TotalOrder Nat
 totalOrderNat_rev = cmpTypes_rev totalOrderNat
 
-export
+public export
 totalOrderLiteNat : TotalOrderLite Nat
 totalOrderLiteNat = totalOrderLiteFromFull Natx.totalOrderNat
 
-export
+public export
 totalOrderLiteNatRev : TotalOrderLite Nat
 totalOrderLiteNatRev = totalOrderLiteFromFull Natx.totalOrderNat_rev
 
-export
+public export
 nat_lt_succ : lt Natx.totalOrderNat x y -> lt Natx.totalOrderNat (S x) (S y)
 nat_lt_succ lt_x_y = LTESucc lt_x_y
