@@ -175,6 +175,6 @@ lteListNatAntisymmetric : Not (LTEListNat xs ys) -> LTEListNat ys xs
 lteListNatAntisymmetric not_lte = lteListNatAntisymmetricHelp not_lte
 
 export
-totalOrderListLte : TotalOrderLite (List Nat) LTEListNat
+totalOrderListLte : TotalOrderLite (List Nat)
 totalOrderListLte =
-    TotalOrderInst (List Nat) LTEListNat isLTEListNat lteListNatTransitive lteListNatAntisymmetric
+    TotalOrderLite_mk LTEListNat isLTEListNat lteListNatTransitive lteListNatAntisymmetric

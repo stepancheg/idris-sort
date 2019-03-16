@@ -101,21 +101,9 @@ nat_cmp_types_rev : TotalOrder Nat
 nat_cmp_types_rev = cmpTypes_rev nat_cmp_types
 
 export
-LTEX : Nat -> Nat -> Type
-LTEX = CmpLTE Natx.nat_cmp_types
-
-export
-Rev_LTEX : Nat -> Nat -> Type
-Rev_LTEX = CmpLTE Natx.nat_cmp_types_rev
-
-export
-LTX : Nat -> Nat -> Type
-LTX = lt nat_cmp_types
-
-export
-totalOrderNat : TotalOrderLite Nat LTEX
+totalOrderNat : TotalOrderLite Nat
 totalOrderNat = totalOrderLiteFromFull Natx.nat_cmp_types
 
 export
-totalOrderNatRev : TotalOrderLite Nat Rev_LTEX
+totalOrderNatRev : TotalOrderLite Nat
 totalOrderNatRev = totalOrderLiteFromFull Natx.nat_cmp_types_rev

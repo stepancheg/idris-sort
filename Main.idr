@@ -9,14 +9,14 @@ import Listx
 
 -- demo shortcut
 export
-sortNat : (i : List Nat) -> (o : List Nat ** (Sorted LTEX o, PermSimple i o))
-sortNat = Sort.sort {to = totalOrderNat}
+sortNat : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderNat) o, PermSimple i o))
+sortNat = Sort.sort
 
 -- another demo shortcut
 export
-sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted Rev_LTEX o, PermSimple i o))
-sortNatRev = Sort.sort {to = totalOrderNatRev}
+sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderNatRev) o, PermSimple i o))
+sortNatRev = Sort.sort
 
 export
 sortListNat : List (List Nat) -> List (List Nat)
-sortListNat l = Sort.sortSimple {to = totalOrderListLte} l
+sortListNat l = Sort.sortSimple {t = totalOrderListLte} l
