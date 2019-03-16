@@ -6,27 +6,18 @@ import Natx
 
 %default total
 
-data NatCmp : Nat -> Nat -> Type where
-    NatLt : LT a b -> NatCmp a b
-    NatGt : GT a b -> NatCmp a b
-    NatEq : NatCmp a a
-
-natCmpSucc : NatCmp x y -> NatCmp (S x) (S y)
-natCmpSucc (NatLt lt) = NatLt $ LTESucc lt
-natCmpSucc (NatGt gt) = NatGt $ LTESucc gt
-natCmpSucc NatEq = NatEq
-
-natCmp : (a, b : Nat) -> NatCmp a b
-natCmp Z Z = NatEq
-natCmp (S a) (S b) = natCmpSucc (natCmp a b)
-natCmp Z (S b) = NatLt $ LTESucc LTEZero
-natCmp (S a) Z = NatGt $ LTESucc LTEZero
+-- TODO: temp
+t : TotalOrder Nat
+t = totalOrderNat
 
 export
 data LTEListNat : (xs, ys : List Nat) -> Type where
     LTEListNatZero : LTEListNat [] right
     LTEListNatRec : (z : Nat) -> LTEListNat xs ys -> LTEListNat (z :: xs) (z :: ys)
-    LTEListNatLT : LT x y -> LTEListNat (x :: xs) (y :: ys)
+    LTEListNatLT : TotalOrder.lt Listx.t x y -> LTEListNat (x :: xs) (y :: ys)
+
+lteListNatRecFromEq : (x = y) -> LTEListNat xs ys -> LTEListNat (x :: xs) (y :: ys)
+lteListNatRecFromEq Refl lte_xs_ys = LTEListNatRec _ lte_xs_ys
 
 notGtSelf : (x : Nat) -> Not (GT x x)
 notGtSelf x = nat_eq_implies_not_lt Refl
@@ -34,14 +25,14 @@ notGtSelf x = nat_eq_implies_not_lt Refl
 notLtSelf : (x : Nat) -> Not (LT x x)
 notLtSelf x = nat_eq_implies_not_lt Refl
 
-gtFirstNotLTE : GT x y -> Not (LTEListNat (x :: xs) (y :: ys))
+gtFirstNotLTE : TotalOrder.gt Listx.t x y -> Not (LTEListNat (x :: xs) (y :: ys))
 gtFirstNotLTE gt_x_y LTEListNatZero impossible
-gtFirstNotLTE gt_x_y (LTEListNatLT lt_x_y) = nat_lt_implies_not_gt gt_x_y lt_x_y
+gtFirstNotLTE gt_x_y (LTEListNatLT lt_x_y) = lt_implies_not_gt t gt_x_y lt_x_y
 gtFirstNotLTE gt_x_y (LTEListNatRec z lte_xs_ys) = notGtSelf z gt_x_y
 
 lteListNatSucc : LTEListNat (x :: xs) (y :: ys) -> LTEListNat ((S x) :: xs) ((S y) :: ys)
 lteListNatSucc LTEListNatZero impossible
-lteListNatSucc (LTEListNatLT lt_x_y) = LTEListNatLT $ LTESucc lt_x_y
+lteListNatSucc (LTEListNatLT lt_x_y) = LTEListNatLT $ nat_lt_succ lt_x_y
 lteListNatSucc (LTEListNatRec z lte_xs_ys) = LTEListNatRec (S z) lte_xs_ys
 
 Uninhabited (LTEListNat (x :: xs) []) where
@@ -51,7 +42,7 @@ Uninhabited (LTEListNat (x :: xs) []) where
 
 fromLTERec : (LTEListNat (z :: xs) (z :: ys)) -> LTEListNat xs ys
 fromLTERec LTEListNatZero impossible
-fromLTERec (LTEListNatLT lt_z_z) = absurd (notLtSelf _ $ lt_z_z)
+fromLTERec {z} (LTEListNatLT lt_z_z) = absurd (notLtSelf z $ lt_z_z)
 fromLTERec (LTEListNatRec z l) = l
 
 fromLTESucc : (LTEListNat (S x :: xs) (S y :: ys)) -> LTEListNat (x :: xs) (y :: ys)
@@ -64,9 +55,6 @@ data ListDec : List Nat -> Type where
     ListDecNil : ListDec []
     ListDecZ : ListDec xs -> ListDec (Z :: xs)
     ListDecS : (x : Nat) -> ListDec (x :: xs) -> ListDec (S x :: xs)
-
-isLT : (m, n : Nat) -> Dec (LT m n)
-isLT m n = isLTE (S m) n
 
 listNatWeight : List Nat -> Nat
 listNatWeight [] = Z
@@ -112,7 +100,7 @@ lteEmptyImpliesEmpty (LTEListNatLT x_y) impossible
 lteListNatTransitive : LTEListNat xs ys -> LTEListNat ys zs -> LTEListNat xs zs
 lteListNatTransitive LTEListNatZero _ = LTEListNatZero
 lteListNatTransitive lte_xs_ys LTEListNatZero = rewrite (lteEmptyImpliesEmpty lte_xs_ys) in LTEListNatZero
-lteListNatTransitive (LTEListNatLT lt_x_y) (LTEListNatLT lt_y_z) = LTEListNatLT (nat_lt_trans lt_x_y lt_y_z)
+lteListNatTransitive (LTEListNatLT lt_x_y) (LTEListNatLT lt_y_z) = LTEListNatLT (lt_trans t lt_x_y lt_y_z)
 lteListNatTransitive (LTEListNatRec z xs_ys) (LTEListNatRec z ys_zs) =
     LTEListNatRec z (lteListNatTransitive xs_ys ys_zs)
 lteListNatTransitive (LTEListNatLT lt_x_y) (LTEListNatRec w lte_ys_zs) = LTEListNatLT lt_x_y
@@ -155,13 +143,14 @@ unlength1 {xs} {ys} rr =
 lteListNatAntisymmetricHelp : Not (LTEListNat xs ys) -> {l : Nat} -> {auto ok : length xs + length ys = l} -> LTEListNat ys xs
 lteListNatAntisymmetricHelp {ys = []} not_lte = LTEListNatZero
 lteListNatAntisymmetricHelp {xs = []} not_lte = absurd $ not_lte LTEListNatZero
-lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = S (S l)} {ok} not_lte with (natCmp x y)
-    lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} not_lte | (NatLt lt_x_y) =
+lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = S (S l)} {ok} not_lte with (cmp t x y)
+    lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys}                    not_lte | (XLT lt_x_y) =
         absurd $ not_lte (LTEListNatLT lt_x_y)
-    lteListNatAntisymmetricHelp {xs = z :: xs} {ys = z :: ys} {l = S (S l)} {ok} not_lte | NatEq = case isLTEListNat ys xs of
-        (Yes prf) => LTEListNatRec z prf
-        (No contra) => let xx = lteListNatAntisymmetricHelp {l} {ok = unlength {x = z} {y = z} ok} contra in absurd $ not_lte (LTEListNatRec z xx)
-    lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} not_lte | (NatGt gt_x_y) = LTEListNatLT gt_x_y
+    lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys}                    not_lte | (XGT gt_x_y) =
+        LTEListNatLT gt_x_y
+    lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = S (S l)} {ok} not_lte | (XEQ eq_x_y) = case isLTEListNat ys xs of
+        (Yes prf) => lteListNatRecFromEq (eq_symm t eq_x_y) prf
+        (No contra) => let xx = lteListNatAntisymmetricHelp {l} {ok = unlength {x} {y} ok} contra in absurd $ not_lte (lteListNatRecFromEq eq_x_y xx)
 lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = Z} {ok} _ = absurd (unlength0 {x} {y} ok)
 lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = S Z} {ok} _ = absurd (unlength1 {x} {y} ok)
 

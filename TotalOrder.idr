@@ -30,8 +30,16 @@ record TotalOrder (a : Type) where
     lt_eq_implies_lt : {x, y, z : a} -> lt x y -> eq y z -> lt x z
     eq_lt_implies_lt : {x, y, z : a} -> eq x y -> lt y z -> lt x z
 
+public export
 gt : (t : TotalOrder a) -> a -> a -> Type
 gt t x y = lt t y x
+
+export
+isLT : (t : TotalOrder a) -> (x, y : a) -> Dec (lt t x y)
+isLT t x y with (cmp t x y)
+    isLT t x y | (XLT lt_x_y) = Yes lt_x_y
+    isLT t x y | (XEQ eq_x_y) = No (\lt_x_y => lt_implies_not_eq t lt_x_y eq_x_y)
+    isLT t x y | (XGT gt_x_y) = No (\lt_x_y => lt_implies_not_gt t lt_x_y gt_x_y)
 
 export
 cmpTypes_rev : TotalOrder a -> TotalOrder a
