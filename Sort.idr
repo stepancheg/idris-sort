@@ -68,11 +68,19 @@ sort1 _ (_ :: _) Z {i_length_eq_l} = absurd i_length_eq_l
 
 -- sort implementation
 export
-sort : {t : TotalOrderLite a} -> (i : List a) -> (o : List a ** (Sorted (lte t) o, PermSimple i o))
-sort {t} i = sort1 t i _
+sortByFull : {t : TotalOrderLite a} -> (i : List a) -> (o : List a ** (Sorted (lte t) o, PermSimple i o))
+sortByFull {t} i = sort1 t i _
 
 export
-sortSimple : {t : TotalOrderLite a} -> List a -> List a
-sortSimple {t} i =
-    let (s ** p) = sort {t} i in
-    s
+sortBy : {t : TotalOrderLite a} -> List a -> List a
+sortBy {t} i = fst (sortByFull {t} i)
+
+export
+sortFull : TotalOrderLiteInterface a =>
+    (i : List a)
+    -> (o : List a ** (Sorted (lte TotalOrderLite.totalOrderLite) o, PermSimple i o))
+sortFull = Sort.sortByFull {t = totalOrderLite}
+
+export
+sort : TotalOrderLiteInterface a => List a -> List a
+sort i = fst (sortFull i)

@@ -94,3 +94,7 @@ totalOrderLiteNat = totalOrderLiteFromFull totalOrderNat
 export
 totalOrderLiteNatRev : TotalOrderLite Nat
 totalOrderLiteNatRev = totalOrderLiteFromFull totalOrderNat_rev
+
+export
+implementation TotalOrderLiteInterface Nat where
+    totalOrderLite = totalOrderLiteNat

@@ -15,3 +15,7 @@ record TotalOrderLite (a : Type) where
 public export
 totalOrderLiteFromFull : TotalOrder a -> TotalOrderLite a
 totalOrderLiteFromFull t = TotalOrderLite_mk (CmpLTE t) cmpLTE_isLTE lte_trans not_lte_implies_gte
+
+public export
+interface TotalOrderLiteInterface a where
+    totalOrderLite : TotalOrderLite a
