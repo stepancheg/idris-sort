@@ -9,12 +9,12 @@ import Listx
 
 -- demo shortcut
 export
-sortNat : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderNat) o, PermSimple i o))
+sortNat : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderLiteNat) o, PermSimple i o))
 sortNat = Sort.sort
 
 -- another demo shortcut
 export
-sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderNatRev) o, PermSimple i o))
+sortNatRev : (i : List Nat) -> (o : List Nat ** (Sorted (lte Natx.totalOrderLiteNatRev) o, PermSimple i o))
 sortNatRev = Sort.sort
 
 export
