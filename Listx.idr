@@ -7,30 +7,30 @@ import Natx
 %default total
 %access export
 
-data LTEListNat : TotalOrder Nat -> (xs, ys : List Nat) -> Type where
-    LTEListNatZero : {t : TotalOrder Nat} -> LTEListNat t [] right
-    LTEListNatRec : {t : TotalOrder Nat} -> TotalOrder.eq t x y -> LTEListNat t xs ys -> LTEListNat t (x :: xs) (y :: ys)
-    LTEListNatLT : {t : TotalOrder Nat} -> TotalOrder.lt t x y -> LTEListNat t (x :: xs) (y :: ys)
+data LTEListNat : TotalOrder a -> (xs, ys : List a) -> Type where
+    LTEListNatZero : {t : TotalOrder a} -> LTEListNat t [] right
+    LTEListNatRec : {t : TotalOrder a} -> TotalOrder.eq t x y -> LTEListNat t xs ys -> LTEListNat t (x :: xs) (y :: ys)
+    LTEListNatLT : {t : TotalOrder a} -> TotalOrder.lt t x y -> LTEListNat t (x :: xs) (y :: ys)
 
 export
-gtFirstNotLTE : {t : TotalOrder Nat} -> TotalOrder.gt t x y -> Not (LTEListNat t (x :: xs) (y :: ys))
+gtFirstNotLTE : {t : TotalOrder a} -> TotalOrder.gt t x y -> Not (LTEListNat t (x :: xs) (y :: ys))
 gtFirstNotLTE {t} gt_x_y LTEListNatZero impossible
 gtFirstNotLTE {t} gt_x_y (LTEListNatLT lt_x_y) = lt_implies_not_gt t gt_x_y lt_x_y
 gtFirstNotLTE {t} gt_x_y (LTEListNatRec eq_x_y lte_xs_ys) = lt_implies_not_eq t gt_x_y (eq_symm t eq_x_y)
 
 private
-notLteNotEmptyEmpty : {t : TotalOrder Nat} -> Not (LTEListNat t (x :: xs) [])
+notLteNotEmptyEmpty : {t : TotalOrder a} -> Not (LTEListNat t (x :: xs) [])
 notLteNotEmptyEmpty LTEListNatZero impossible
 notLteNotEmptyEmpty LTEListNatRec impossible
 notLteNotEmptyEmpty LTEListNatLT impossible
 
 private
-fromLTERecEq : {t : TotalOrder Nat} -> eq t x y -> (LTEListNat t (x :: xs) (y :: ys)) -> LTEListNat t xs ys
+fromLTERecEq : {t : TotalOrder a} -> eq t x y -> (LTEListNat t (x :: xs) (y :: ys)) -> LTEListNat t xs ys
 fromLTERecEq _ LTEListNatZero impossible
 fromLTERecEq {t} eq_x_y (LTEListNatLT lt_z_z) = absurd (eq_implies_not_lt t eq_x_y lt_z_z)
 fromLTERecEq _ (LTEListNatRec _ l) = l
 
-isLTEListNat : {t : TotalOrder Nat} -> (xs, ys : List Nat) -> Dec (LTEListNat t xs ys)
+isLTEListNat : {t : TotalOrder a} -> (xs, ys : List a) -> Dec (LTEListNat t xs ys)
 isLTEListNat [] _ = Yes LTEListNatZero
 isLTEListNat (x :: xs) [] = No notLteNotEmptyEmpty
 isLTEListNat {t} (x :: xs) (y :: ys) with (cmp t x y)
@@ -40,17 +40,17 @@ isLTEListNat {t} (x :: xs) (y :: ys) with (cmp t x y)
         Yes prf => Yes $ LTEListNatRec {t} eq prf
         No contra => No $ contra . fromLTERecEq eq
 
-lteEmptyImpliesEmpty : {t : TotalOrder Nat} -> LTEListNat t xs [] -> xs = []
+lteEmptyImpliesEmpty : {t : TotalOrder a} -> LTEListNat t xs [] -> xs = []
 lteEmptyImpliesEmpty LTEListNatZero = Refl
 lteEmptyImpliesEmpty (LTEListNatRec eq_x_y xs_ys) impossible
 lteEmptyImpliesEmpty (LTEListNatLT lt_x_y) impossible
 
 private
-lteListNatTransitiveHelp : {t : TotalOrder Nat} -> xs = [] -> LTEListNat t xs []
+lteListNatTransitiveHelp : {t : TotalOrder a} -> xs = [] -> LTEListNat t xs []
 lteListNatTransitiveHelp Refl = LTEListNatZero
 
 private
-lteListNatTransitive : {t : TotalOrder Nat} -> LTEListNat t xs ys -> LTEListNat t ys zs -> LTEListNat t xs zs
+lteListNatTransitive : {t : TotalOrder a} -> LTEListNat t xs ys -> LTEListNat t ys zs -> LTEListNat t xs zs
 lteListNatTransitive LTEListNatZero _ =
     LTEListNatZero
 lteListNatTransitive {xs} {zs = []} lte_xs_ys LTEListNatZero =
@@ -105,7 +105,7 @@ unlength1 {xs} {ys} rr =
     absurd $ sumZeroImpliesRightZero qw
 
 private
-lteListNatAntisymmetricHelp : {t : TotalOrder Nat}
+lteListNatAntisymmetricHelp : {t : TotalOrder a}
     -> Not (LTEListNat t xs ys)
     -> {l : Nat}
     -> {auto ok : length xs + length ys = l}
@@ -126,10 +126,14 @@ lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = Z} {ok} _ = absur
 lteListNatAntisymmetricHelp {xs = x :: xs} {ys = y :: ys} {l = S Z} {ok} _ = absurd (unlength1 {x} {y} ok)
 
 private
-lteListNatAntisymmetric : {t : TotalOrder Nat} -> Not (LTEListNat t xs ys) -> LTEListNat t ys xs
+lteListNatAntisymmetric : {t : TotalOrder a} -> Not (LTEListNat t xs ys) -> LTEListNat t ys xs
 lteListNatAntisymmetric not_lte = lteListNatAntisymmetricHelp not_lte
 
 export
+totalOrderList : TotalOrder a -> TotalOrderLite (List a)
+totalOrderList t =
+    TotalOrderLite_mk (LTEListNat t) isLTEListNat lteListNatTransitive lteListNatAntisymmetric
+
+export
 totalOrderListLte : TotalOrderLite (List Nat)
-totalOrderListLte =
-    TotalOrderLite_mk (LTEListNat totalOrderNat) isLTEListNat lteListNatTransitive lteListNatAntisymmetric
+totalOrderListLte = totalOrderList totalOrderNat
