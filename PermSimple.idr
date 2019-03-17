@@ -35,7 +35,7 @@ permSimplePrepend a p = PermSimpleIns p a {xs = []} {zs = []}
 
 -- Convert this definition to "hard" definition
 permSimpleToHard : PermSimple as bs -> PermHard as bs
-permSimpleToHard PermSimpleEmpty = PermHardRefl
+permSimpleToHard PermSimpleEmpty = PermHardEmpty
 permSimpleToHard {as = xs ++ [v] ++ ys} {bs = zs ++ [v] ++ ws} (PermSimpleIns p v) =
     let xys = xs ++ ys in
     let zws = zs ++ ws in
@@ -50,7 +50,7 @@ replace2 Refl Refl prf = prf
 
 -- Convert "hard" definition to simple
 permHardToSimple : PermHard as bs -> PermSimple as bs
-permHardToSimple PermHardRefl = permSimpleFromRefl _
+permHardToSimple PermHardEmpty = PermSimpleEmpty
 permHardToSimple {as} {bs} (PermHardIns {l} {m} p ias ibs {x = v}) =
     let (xs ** ys ** (xs_v_ys, xs_ys)) = inListDismantle ias in
     let (zs ** ws ** (zs_v_ws, zs_ws)) = inListDismantle ibs in

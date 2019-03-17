@@ -15,13 +15,15 @@ import InList
 public export
 data PermHard : List a -> List a -> Type
     where
-        PermHardRefl : PermHard l l
+        PermHardEmpty : PermHard [] []
         PermHardIns : PermHard l m -> InList x l l1 -> InList x m m1 -> PermHard l1 m1
 
-inv : InList a as cs -> InList b bs cs -> Either (a = b, as = bs) (ds ** (InList b ds as, InList a ds bs))
-inv {as} InListHere InListHere = Left (Refl, Refl)
+inv : InList a as cs
+    -> InList b bs cs
+    -> Either (a = b, as = bs) (ds ** (InList b ds as, InList a ds bs))
+inv InListHere InListHere = Left (Refl, Refl)
 inv InListHere (InListThere p2) = Right (_ ** (p2, InListHere))
-inv (InListThere p1) InListHere = Right (_ ** (InListHere , p1))
+inv (InListThere p1) InListHere = Right (_ ** (InListHere, p1))
 inv (InListThere p1) (InListThere p2) =
     case inv p1 p2 of
         Left (Refl, Refl) => Left (Refl, Refl)
@@ -35,36 +37,34 @@ exch (InListThere p1) (InListThere p2) with (exch p1 p2)
 
 
 l1 : PermHard (x :: xs) xys -> (ys ** (InList x ys xys, PermHard xs ys))
-l1 PermHardRefl = (_ ** (InListHere, PermHardRefl))
+l1 PermHardEmpty impossible
 l1 (PermHardIns p InListHere iys) = (_ ** (iys, p))
 l1 (PermHardIns p (InListThere ixs) iys) with (l1 p)
-    l1 (PermHardIns p (InListThere ixs) iys {x = y}) {x = x} | (ys ** (i, perm)) with (exch i iys)
+    l1 (PermHardIns p (InListThere ixs) iys) | (ys ** (i, perm)) with (exch i iys)
         l1 (PermHardIns p (InListThere ixs) iys) | (ys ** (i, perm)) | (proj1 ** (proj2, proj3)) =
             (proj1 ** (proj3, PermHardIns perm ixs proj2))
 
 
-nonEmptyListLengthNeverZero : (xxs : List t) -> {auto nonEmpty : NonEmpty xxs} -> Not (length xxs = Z)
-nonEmptyListLengthNeverZero [] {nonEmpty} = absurd nonEmpty
-nonEmptyListLengthNeverZero (x :: xs) = absurd
+extrPerm : InList x xs xxs
+    -> {l : Nat}
+    -> {auto ok : length xxs = l}
+    -> PermHard xxs xys
+    -> (ys ** (InList x ys xys, PermHard xs ys))
 
-extrPerm : InList x xs xxs -> {l : Nat} -> {auto ok : (length xxs = l)} -> PermHard xxs xys -> (ys ** (InList x ys xys, PermHard xs ys))
+extrPerm i PermHardEmpty impossible
 
-extrPerm {xxs} {l = Z} {ok} i _ =
-    let i = inListImpliesNotEmpty i in
-    let nz = nonEmptyListLengthNeverZero xxs in
-    void (nz ok)
+extrPerm {xxs = x :: xs} {l = Z} {ok} i _ =
+    absurd ok
 
-extrPerm i PermHardRefl = (_ ** (i, PermHardRefl))
-
-extrPerm InListHere (PermHardIns l1_m1 InListHere i_m1) = (_ ** (i_m1, l1_m1))
+extrPerm InListHere (PermHardIns l1_m1 InListHere i_m1) =
+    (_ ** (i_m1, l1_m1))
 
 extrPerm InListHere (PermHardIns p2 (InListThere ixs) iys) =
     let (proj1 ** (proj2, proj6)) = l1 p2 in
     let (proj3 ** (proj4, proj5)) = exch proj2 iys in
     (proj3 ** (proj5, PermHardIns proj6 ixs proj4))
 
-extrPerm {ok} {xxs = a :: xs} {l = S k} n@(InListThere p1 {a} {l = zs} {m = xs}) (PermHardIns p2 InListHere iys) =
-    let www = length xs = k in
+extrPerm {ok} {xxs = a :: xs} {l = S k} (InListThere p1) (PermHardIns p2 InListHere iys) =
     let (proj1 ** (proj2, proj6)) = extrPerm {l = k} {xxs = xs} {ok = cong {f=Nat.pred} ok} p1 p2 in
     let (proj3 ** (proj4, proj5)) = exch proj2 iys in
     (proj3 ** (proj5, PermHardIns proj6 InListHere proj4))
@@ -84,17 +84,12 @@ extrPerm {l = S (S k)} {ok} (InListThere p1) (PermHardIns p2 (InListThere ixs) i
             (proj51 ** (proj53, PermHardIns (PermHardIns proj33 InListHere proj42) (InListThere proj12) proj52))
 
 extrPerm {l = S Z} {ok} {xxs = a :: x1 :: xs} (InListThere p1 {m = x1 :: xs}) _ =
-    let imp02 : Not (length (a :: x1 :: xs) = S Z) = SSIsNotSZ in
-    absurd (imp02 ok)
-    where
-        SSIsNotSZ : {x: Nat} -> (S (S x) = S Z) -> Void
-        SSIsNotSZ Refl impossible
+    absurd $ cong {f=Nat.pred} ok
 
 
 export
 permHardTrans : PermHard xs ys -> PermHard ys zs -> PermHard xs zs
-permHardTrans PermHardRefl p = p
-permHardTrans p PermHardRefl = p
+permHardTrans PermHardEmpty PermHardEmpty = PermHardEmpty
 permHardTrans (PermHardIns xy ix iy) p2 =
     let (proj1 ** (proj2, proj3)) = extrPerm iy p2 in
     PermHardIns (permHardTrans xy proj3) ix proj2
