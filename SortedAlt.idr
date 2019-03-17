@@ -6,17 +6,23 @@ import Forall
 
 -- Alternative definition of what is a sorted list
 public export
-data SortedAlt : (a -> a -> Type) -> List a -> Type
+data SortedAlt : (lte : a -> a -> Type) -> List a -> Type
     where
         -- Empty list is sorted
-        SortedAltEmpty : {lte : a -> a -> Type} -> SortedAlt lte []
+        SortedAltEmpty : SortedAlt lte []
         -- Non-empty list is sorted when
         -- * first element is smaller than the rest
         -- * remaining elements form a sorted list
         SortedAltRec : {lte : a -> a -> Type} -> (x : a) -> (rem : List a) ->
             Forall (lte x) rem -> SortedAlt lte rem -> SortedAlt lte (x :: rem)
 
--- Proof that single element list is always sorted
+-- Empty list is always sorted
+export
+sortedAlt0 : {lte : a -> a -> Type} -> SortedAlt lte []
+sortedAlt0 = SortedAltEmpty
+
+-- Single element list is always sorted
+export
 sortedAlt1 : (x : a) -> SortedAlt lte [x]
 sortedAlt1 x = SortedAltRec x [] ForallEmpty SortedAltEmpty
 
