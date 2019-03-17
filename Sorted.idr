@@ -7,12 +7,12 @@ import SortedAlt
 
 -- Definition of what it means for List to be sorted
 public export
-data Sorted : (a -> a -> Type) -> List a -> Type
+data Sorted : (lte : a -> a -> Type) -> List a -> Type
     where
         -- Empty list is always sorted
-        SortedEmpty : {lte : a -> a -> Type} -> Sorted lte []
+        SortedEmpty : Sorted lte []
         -- List of one element is always sorted
-        SortedOne : {lte : a -> a -> Type} -> (x : a) -> Sorted lte [x]
+        SortedOne : (x : a) -> Sorted lte [x]
         -- List of two or more element is sorted iff both are true
         -- * first is less or equal than second
         -- * tail is sorted
@@ -22,13 +22,13 @@ data Sorted : (a -> a -> Type) -> List a -> Type
             -> Sorted lte (x :: y :: rem)
 
 -- Proof that list is not sorted if first element is greater than second
-notSortedE1E2 : {lte : a -> a -> Type} -> Not (lte x y) -> Sorted lte (x :: y :: rem) -> Void
+notSortedE1E2 : {lte : a -> a -> Type} -> Not (lte x y) -> Not (Sorted lte (x :: y :: rem))
 notSortedE1E2 _ SortedEmpty impossible
 notSortedE1E2 _ (SortedOne _) impossible
 notSortedE1E2 notLTE (SortedRec _ _ _ lte _) = notLTE lte
 
 -- Proof that list is not sorted if tail is not sorted
-notSortedBRem : {lte : a -> a -> Type} -> Not (Sorted lte (y :: rem)) -> Sorted lte (x :: y :: rem) -> Void
+notSortedBRem : {lte : a -> a -> Type} -> Not (Sorted lte (y :: rem)) -> Not (Sorted lte (x :: y :: rem))
 notSortedBRem _ SortedEmpty impossible
 notSortedBRem _ (SortedOne _) impossible
 notSortedBRem notSorted (SortedRec _ _ _ _ sorted) = notSorted sorted
